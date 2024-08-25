@@ -84,7 +84,11 @@ def test_computations(close_df):
     assert 'Sharpe Ratio' in metrics
 
     assert isinstance(metrics['Return'], float)
+    assert metrics['Return'] > -0.1
+    assert metrics['Return'] < 0.1
     assert isinstance(metrics['Volatility'], float)
+    assert metrics['Volatility'] > -0.1
+    assert metrics['Volatility'] < 0.1
     assert isinstance(metrics['Sharpe Ratio'], float)
 
 

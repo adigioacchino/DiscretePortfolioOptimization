@@ -3,19 +3,20 @@ from discrete_portfolio_optimization.portfolio import Portfolio
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from warnings import warn
 
 class PortfolioOptimizer:
     def __init__(
             self,
             initial_portfolio:Portfolio,
             returns_df:pd.DataFrame,
-            alpha0:float=1e-1,
-            alpha1:float=10,
+            alpha0:float=1e1,
+            alpha1:float=1e3,
             n_alphas:int=10,
             gamma:float=1.,
             n_therm_steps:int=1_000,
-            beta0:float=1e-1,
-            beta1:float=10,
+            beta0:float=1,
+            beta1:float=1e3,
             n_betas:int=5_000,
             n_steps_per_beta:int=1
             ):
@@ -23,6 +24,16 @@ class PortfolioOptimizer:
         self.rng = initial_portfolio.rng # share seed with portfolio if was provided
         self.best_portfolios = []
         self.gamma = gamma
+        # check that returns df is in *daily percentage* format
+        if not np.all(returns_df.mean() >= -1):
+            warn("Large negative returns detected,"
+                 " remember that returns should be in *daily percentage* format.")
+        if not np.all(returns_df.mean() <= 1):
+            warn("Large positive returns detected,"
+                 " remember that returns should be in *daily percentage* format.")
+        if not np.max(np.abs(returns_df.mean()) >= 0.01):
+            warn("Largest return is very small,"
+                 " remember that returns should be in *daily percentage* format.")
         self.returns_df = returns_df
         self.alpha_schedule = np.geomspace(alpha0, alpha1, n_alphas)
         self.beta_schedule = self._prepare_exp_beta_schedule(beta0, beta1, 

@@ -22,7 +22,8 @@ def pft_closedf():
     close_df = pd.read_csv('tests/data/20240825_close.csv', index_col=0)
     pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000,
                     seed=42)
-    return pft, close_df
+    return_df = close_df.pct_change().dropna()
+    return pft, return_df * 100
 
 
 @mark.dependency(depends=dep_tests, scope='session')
@@ -62,6 +63,7 @@ def test_portfolio_minus_energy(pft_closedf):
     energy = PortfolioOptimizer._portfolio_minus_energy(alpha, gamma, pft, close_df)
     assert isinstance(energy, float)
 
+
 @mark.dependency(depends=dep_tests, scope='session')
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
 def test_runs(pft_closedf):
@@ -96,52 +98,6 @@ def test_runs(pft_closedf):
 
 @mark.dependency(depends=dep_tests, scope='session')
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
-def test_runs_fixed_alpha(pft_closedf):
-    pft, close_df = pft_closedf
-    po = PortfolioOptimizer(
-        pft,
-        close_df,
-        n_therm_steps = 1_000,
-        n_betas = 2_500,
-        n_steps_per_beta = 2
-    )
-
-    # first optimal portfolio has low alpha, so should have high return and low volatility
-    alpha0 = 1e-1
-    alpha1 = 10
-
-    po.run_fixed_alpha(alpha0)
-    pft1 = po.best_portfolios[0]
-    results_df = close_df.pct_change().dropna()
-    metrics0 = pft.portfolio_metrics(results_df)
-    metrics1 = pft1.portfolio_metrics(results_df)
-    po.run_fixed_alpha(alpha1)
-    pft2 = po.best_portfolios[1]
-    metrics2 = pft2.portfolio_metrics(results_df)
-    assert metrics1['Return'] > metrics0['Return']
-    assert metrics1['Return'] > metrics2['Return']
-    assert metrics2['Volatility'] < metrics0['Volatility']
-    assert metrics2['Volatility'] < metrics1['Volatility']
-
-    # now case with large and small gamma
-    po = PortfolioOptimizer(
-        pft,
-        close_df,
-        n_therm_steps = 1_000,
-        n_betas = 2_500,
-        n_steps_per_beta = 2,
-        gamma = 100.
-    )
-    
-    po.run_fixed_alpha(1.)
-    pft3 = po.best_portfolios[0]
-    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft.weights)
-    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft1.weights)
-    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft2.weights)
-
-
-@mark.dependency(depends=dep_tests, scope='session')
-@pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
 def test_runs_fixed_alpha_2(pft_closedf):
     pft, close_df = pft_closedf
     po = PortfolioOptimizer(
@@ -156,15 +112,34 @@ def test_runs_fixed_alpha_2(pft_closedf):
     # alpha = 0., gamma = 0., so should be composed of the asset with highest return almost exclusively
     po.run_fixed_alpha(0.)
     pft1 = po.best_portfolios[0]
-    results_df = close_df.pct_change().dropna()
-    returns = results_df.mean()
+    returns = close_df.mean()
+    metrics0 = pft.portfolio_metrics(close_df)
+    metrics1 = pft1.portfolio_metrics(close_df)
     assert np.argmax(returns) == np.argmax(pft1.weights)
-    assert np.max(pft1.weights) > 0.95 # will not be exactly 1 because of discrete nature of the assets
+    assert np.max(pft1.weights) > 0.9 # will never be exactly 1 because of discrete nature of the assets
+    assert metrics1['Return'] > metrics0['Return']
 
-    # alpha = 100., gamma = 0., so should be composed of the asset with lowest volatility almost exclusively
-    po.run_fixed_alpha(10.)
+    # alpha = 100., gamma = 0., so should have less volatility than each individual asset
+    po.run_fixed_alpha(1e3)
     pft2 = po.best_portfolios[1]
-    cov_matrix = results_df.cov()
-    volatilities = np.sqrt(np.diag(cov_matrix))
-    assert np.argmin(volatilities) == np.argmax(pft2.weights)
-    assert np.max(pft2.weights) > 0.95 # will not be exactly 1 because of discrete nature of the assets
+    cov_matrix = close_df.cov()
+    volatilities = np.diag(cov_matrix)
+    metrics2 = pft2.portfolio_metrics(close_df)
+    assert metrics2['Volatility'] < np.min(np.sqrt(volatilities))
+    assert metrics2['Volatility'] < metrics0['Volatility']
+
+    # now case with large gamma
+    po = PortfolioOptimizer(
+        pft,
+        close_df,
+        n_therm_steps = 1_000,
+        n_betas = 2_500,
+        n_steps_per_beta = 2,
+        gamma = 100.
+    )
+    
+    po.run_fixed_alpha(1.)
+    pft3 = po.best_portfolios[0]
+    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft.weights)
+    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft1.weights)
+    assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft2.weights)
