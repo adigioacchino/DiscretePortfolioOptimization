@@ -16,7 +16,7 @@ class PortfolioOptimizer:
             n_therm_steps:int=1_000,
             beta0:float=1e-1,
             beta1:float=10,
-            n_steps:int=5_000,
+            n_betas:int=5_000,
             n_steps_per_beta:int=1
             ):
         self.initial_portfolio = initial_portfolio.copy()
@@ -26,7 +26,7 @@ class PortfolioOptimizer:
         self.returns_df = returns_df
         self.alpha_schedule = np.geomspace(alpha0, alpha1, n_alphas)
         self.beta_schedule = self._prepare_exp_beta_schedule(beta0, beta1, 
-                                                             n_therm_steps, n_steps, 
+                                                             n_therm_steps, n_betas, 
                                                              n_steps_per_beta)
 
 
@@ -47,11 +47,11 @@ class PortfolioOptimizer:
     def _prepare_exp_beta_schedule(beta0: float,
                                     beta1: float,
                                     n_therm_steps: int,
-                                    n_steps: int,
+                                    n_betas: int,
                                     n_step_per_beta: int
                                       ) -> np.ndarray:
         schedule1 = np.full(n_therm_steps, beta0)
-        schedule2 = np.linspace(np.log(beta0), np.log(beta1), n_steps)
+        schedule2 = np.linspace(np.log(beta0), np.log(beta1), n_betas)
         schedule2 = np.repeat(schedule2, n_step_per_beta)
         schedule2 = np.exp(schedule2)
         return np.concatenate([schedule1, schedule2])        

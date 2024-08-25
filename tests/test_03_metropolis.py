@@ -29,7 +29,7 @@ def pft_closedf():
 def test_init_portfolio_optimizer(pft_closedf):
     pft, close_df = pft_closedf
     t_n_alphas = 10
-    t_n_steps = 5_000
+    t_n_betas = 5_000
     t_n_steps_per_beta = 2
     t_n_therm_steps = 1_000
     t_beta0 = 1e-3
@@ -41,17 +41,17 @@ def test_init_portfolio_optimizer(pft_closedf):
         n_therm_steps = t_n_therm_steps,
         beta0 = t_beta0,
         beta1 = t_beta1,
-        n_steps = t_n_steps,
+        n_betas = t_n_betas,
         n_steps_per_beta = t_n_steps_per_beta
     )
 
     # test alpha and beta schedules
     assert len(po.alpha_schedule) == t_n_alphas
-    assert len(po.beta_schedule) == t_n_therm_steps + t_n_steps * t_n_steps_per_beta
+    assert len(po.beta_schedule) == t_n_therm_steps + t_n_betas * t_n_steps_per_beta
     assert po.beta_schedule[0] == approx(t_beta0)
     assert po.beta_schedule[t_n_therm_steps] == approx(t_beta0)
     assert po.beta_schedule[-1] == approx(t_beta1)
-    assert len(np.unique(po.beta_schedule)) == t_n_steps + 1
+    assert len(np.unique(po.beta_schedule)) == t_n_betas + 1
 
 
 @mark.dependency(depends=dep_tests, scope='session')
@@ -67,7 +67,7 @@ def test_portfolio_minus_energy(pft_closedf):
 def test_runs(pft_closedf):
     pft, close_df = pft_closedf
     t_n_alphas = 3
-    t_n_steps = 1_000
+    t_n_betas = 1_000
     t_n_steps_per_beta = 2
     t_n_therm_steps = 500
     po = PortfolioOptimizer(
@@ -75,7 +75,7 @@ def test_runs(pft_closedf):
         close_df,
         n_alphas = t_n_alphas,
         n_therm_steps = t_n_therm_steps,
-        n_steps = t_n_steps,
+        n_betas = t_n_betas,
         n_steps_per_beta = t_n_steps_per_beta
     )
 
@@ -102,7 +102,7 @@ def test_runs_fixed_alpha(pft_closedf):
         pft,
         close_df,
         n_therm_steps = 1_000,
-        n_steps = 2_500,
+        n_betas = 2_500,
         n_steps_per_beta = 2
     )
 
@@ -128,7 +128,7 @@ def test_runs_fixed_alpha(pft_closedf):
         pft,
         close_df,
         n_therm_steps = 1_000,
-        n_steps = 2_500,
+        n_betas = 2_500,
         n_steps_per_beta = 2,
         gamma = 100.
     )
@@ -148,7 +148,7 @@ def test_runs_fixed_alpha_2(pft_closedf):
         pft,
         close_df,
         n_therm_steps = 1_000,
-        n_steps = 2_500,
+        n_betas = 2_500,
         n_steps_per_beta = 2,
         gamma = 0.
     )
