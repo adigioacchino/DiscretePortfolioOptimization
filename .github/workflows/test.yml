@@ -26,7 +26,6 @@ jobs:
 
       - name: Get coverage percentage
         run: |
-         uv add json
          export TOTAL=$(uv run python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
          echo "coverage=$TOTAL" >> $GITHUB_ENV
          
