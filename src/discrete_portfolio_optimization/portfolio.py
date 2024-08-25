@@ -117,26 +117,24 @@ class Portfolio:
         return
 
         
-    def get_year_return(self, returns_df:pd.DataFrame) -> float:
-        # 252 is the number of trading days in a year
-        # returns_df can be computed from a close_df with something like close_df.pct_change().dropna()
-        return np.sum(returns_df.mean() * self.weights) #* 252 
+    def get_day_return(self, returns_df:pd.DataFrame) -> float:
+        return np.sum(returns_df.mean() * self.weights)
     
 
-    def get_year_volatility(self, returns_df:pd.DataFrame) -> float:
+    def get_day_volatility(self, returns_df:pd.DataFrame) -> float:
         cov_matrix = returns_df.cov()
-        return np.sqrt(self.weights.T @ cov_matrix @ self.weights) #* np.sqrt(252)
+        return self.weights.T @ np.sqrt(cov_matrix) @ self.weights
     
 
     def get_sharpe(self, returns_df:pd.DataFrame) -> float:
-        yret = self.get_year_return(returns_df)
-        ycov = self.get_year_volatility(returns_df)
+        yret = self.get_day_return(returns_df)
+        ycov = self.get_day_volatility(returns_df)
         return yret / ycov
     
 
     def portfolio_metrics(self, returns_df:pd.DataFrame) -> dict:
-        return {'Return': self.get_year_return(returns_df),
-                'Volatility': self.get_year_volatility(returns_df),
+        return {'Return': self.get_day_return(returns_df),
+                'Volatility': self.get_day_volatility(returns_df),
                 'Sharpe Ratio': self.get_sharpe(returns_df)}
 
 
