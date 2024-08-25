@@ -28,7 +28,7 @@ def pft_closedf():
 
 @mark.dependency(depends=dep_tests, scope='session')
 def test_init_portfolio_optimizer(pft_closedf):
-    pft, close_df = pft_closedf
+    pft, results_df = pft_closedf
     t_n_alphas = 10
     t_n_betas = 5_000
     t_n_steps_per_beta = 2
@@ -37,7 +37,7 @@ def test_init_portfolio_optimizer(pft_closedf):
     t_beta1 = 1
     po = PortfolioOptimizer(
         pft,
-        close_df,
+        results_df,
         n_alphas = t_n_alphas,
         n_therm_steps = t_n_therm_steps,
         beta0 = t_beta0,
@@ -57,24 +57,24 @@ def test_init_portfolio_optimizer(pft_closedf):
 
 @mark.dependency(depends=dep_tests, scope='session')
 def test_portfolio_minus_energy(pft_closedf):
-    pft, close_df = pft_closedf
+    pft, results_df = pft_closedf
     alpha = 0.1
     gamma = 0.1
-    energy = PortfolioOptimizer._portfolio_minus_energy(alpha, gamma, pft, close_df)
+    energy = PortfolioOptimizer._portfolio_minus_energy(alpha, gamma, pft, results_df)
     assert isinstance(energy, float)
 
 
 @mark.dependency(depends=dep_tests, scope='session')
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
 def test_runs(pft_closedf):
-    pft, close_df = pft_closedf
+    pft, results_df = pft_closedf
     t_n_alphas = 3
     t_n_betas = 1_000
     t_n_steps_per_beta = 2
     t_n_therm_steps = 500
     po = PortfolioOptimizer(
         pft,
-        close_df,
+        results_df,
         n_alphas = t_n_alphas,
         n_therm_steps = t_n_therm_steps,
         n_betas = t_n_betas,
@@ -99,10 +99,10 @@ def test_runs(pft_closedf):
 @mark.dependency(depends=dep_tests, scope='session')
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
 def test_runs_fixed_alpha_2(pft_closedf):
-    pft, close_df = pft_closedf
+    pft, results_df = pft_closedf
     po = PortfolioOptimizer(
         pft,
-        close_df,
+        results_df,
         n_therm_steps = 1_000,
         n_betas = 2_500,
         n_steps_per_beta = 2,
@@ -112,9 +112,9 @@ def test_runs_fixed_alpha_2(pft_closedf):
     # alpha = 0., gamma = 0., so should be composed of the asset with highest return almost exclusively
     po.run_fixed_alpha(0.)
     pft1 = po.best_portfolios[0]
-    returns = close_df.mean()
-    metrics0 = pft.portfolio_metrics(close_df)
-    metrics1 = pft1.portfolio_metrics(close_df)
+    returns = results_df.mean()
+    metrics0 = pft.portfolio_metrics(results_df)
+    metrics1 = pft1.portfolio_metrics(results_df)
     assert np.argmax(returns) == np.argmax(pft1.weights)
     assert np.max(pft1.weights) > 0.9 # will never be exactly 1 because of discrete nature of the assets
     assert metrics1['Return'] > metrics0['Return']
@@ -122,16 +122,16 @@ def test_runs_fixed_alpha_2(pft_closedf):
     # alpha = 100., gamma = 0., so should have less volatility than each individual asset
     po.run_fixed_alpha(1e3)
     pft2 = po.best_portfolios[1]
-    cov_matrix = close_df.cov()
+    cov_matrix = results_df.cov()
     volatilities = np.diag(cov_matrix)
-    metrics2 = pft2.portfolio_metrics(close_df)
+    metrics2 = pft2.portfolio_metrics(results_df)
     assert metrics2['Volatility'] < np.min(np.sqrt(volatilities))
     assert metrics2['Volatility'] < metrics0['Volatility']
 
     # now case with large gamma
     po = PortfolioOptimizer(
         pft,
-        close_df,
+        results_df,
         n_therm_steps = 1_000,
         n_betas = 2_500,
         n_steps_per_beta = 2,
