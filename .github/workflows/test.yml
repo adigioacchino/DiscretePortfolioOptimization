@@ -22,4 +22,22 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies and run tests
-        run: uv run pytest --cov=src
+        run: uv run pytest --cov=src --cov-report=json
+
+      - name: Get coverage percentage
+        run: |
+         uv add json
+         export TOTAL=$(uv run python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+         echo "coverage=$TOTAL" >> $GITHUB_ENV
+         
+      - name: Create the Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: a72d32f9e10c404f7738822dac068274
+          filename: covbadge.json
+          label: Total coverage
+          message: is ${{ env.coverage }}
+          valColorRange: ${{ env.coverage }}
+          maxColorRange: 100
+          minColorRange: 0
