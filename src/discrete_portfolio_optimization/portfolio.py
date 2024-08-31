@@ -117,25 +117,39 @@ class Portfolio:
         return
 
         
-    def get_day_return(self, returns_df:pd.DataFrame) -> float:
-        return np.sum(returns_df.mean() * self.weights)
+    def get_day_return(self, returns_df:pd.DataFrame,
+                       account_for_cash:bool=True) -> float:
+        if account_for_cash:
+            # cash has no return
+            allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
+            return np.sum(returns_df.mean() * self.weights) * allocated_frac
+        else:
+            return np.sum(returns_df.mean() * self.weights)
     
 
-    def get_day_volatility(self, returns_df:pd.DataFrame) -> float:
+    def get_day_volatility(self, returns_df:pd.DataFrame,
+                           account_for_cash:bool=True) -> float:
         cov_matrix = returns_df.cov()
-        return self.weights.T @ np.sqrt(cov_matrix) @ self.weights
+        if account_for_cash:
+            # cash has no volatility
+            allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
+            return self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+        else:
+            return self.weights.T @ np.sqrt(cov_matrix) @ self.weights
     
 
-    def get_sharpe(self, returns_df:pd.DataFrame) -> float:
-        yret = self.get_day_return(returns_df)
-        ycov = self.get_day_volatility(returns_df)
+    def get_sharpe(self, returns_df:pd.DataFrame,
+                   account_for_cash:bool=True) -> float:
+        yret = self.get_day_return(returns_df, account_for_cash)
+        ycov = self.get_day_volatility(returns_df, account_for_cash)
         return yret / ycov
     
 
-    def portfolio_metrics(self, returns_df:pd.DataFrame) -> dict:
-        return {'Return': self.get_day_return(returns_df),
-                'Volatility': self.get_day_volatility(returns_df),
-                'Sharpe Ratio': self.get_sharpe(returns_df)}
+    def portfolio_metrics(self, returns_df:pd.DataFrame,
+                          account_for_cash:bool=True) -> dict:
+        return {'Return': self.get_day_return(returns_df, account_for_cash),
+                'Volatility': self.get_day_volatility(returns_df, account_for_cash),
+                'Sharpe Ratio': self.get_sharpe(returns_df, account_for_cash)}
 
 
     def copy(self):
