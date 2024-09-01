@@ -108,13 +108,13 @@ def __(
 @app.cell
 def __(mo):
     # UI elements - simulated annealing
-    alpha_slider = mo.ui.range_slider(start=-4, stop=4, step=0.5, value=[-2,2],
+    alpha_slider = mo.ui.range_slider(start=-4, stop=4, step=0.5, value=[-2,0.5],
                                       label="Range of alpha values (exponent of 10)", show_value=True)
-    n_alphas = mo.ui.slider(start=2, stop=100, step=1, value=25,
+    n_alphas = mo.ui.slider(start=2, stop=500, step=1, value=25,
                             label="Number of alpha values", show_value=True)
-    gamma = mo.ui.slider(start=-2, stop=2, step=0.5, value=-1,
+    gamma = mo.ui.slider(start=-2, stop=2, step=0.5, value=-2,
                          label="Gamma (exponent of 10)", show_value=True)
-    n_therm_steps = mo.ui.slider(start=0, stop=10_000, step=250, value=1_000,
+    n_therm_steps = mo.ui.slider(start=0, stop=10_000, step=250, value=500,
                                  label="Number of thermalization steps", show_value=True)
     beta_slider = mo.ui.range_slider(start=-1, stop=5, step=0.5, value=[1,3],
                                      label="Range of beta values (exponent of 10)", show_value=True)
@@ -279,11 +279,6 @@ def __(
 
     mo.ui.table(sp_df.round(2), show_column_summaries=False)
     return i, selected_idxs, selected_portfolios, sp_df, symbol
-
-
-@app.cell
-def __():
-    return
 
 
 if __name__ == "__main__":
