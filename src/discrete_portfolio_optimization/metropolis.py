@@ -3,7 +3,9 @@ from discrete_portfolio_optimization.portfolio import Portfolio
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import marimo as mo # to have marimo-compatible progress bars
 from warnings import warn
+
 
 class PortfolioOptimizer:
     def __init__(
@@ -85,7 +87,10 @@ class PortfolioOptimizer:
                                                             self.initial_portfolio, self.returns_df)
         best_portfolio = self._current_portfolio
         best_score = self._current_score
-        for beta in tqdm(self.beta_schedule):
+        for beta in tqdm(self.beta_schedule,
+                         leave=False,
+                         desc=f"Optimizing portfolio with alpha = {alpha:.2e}"
+                         ):
             self._step(alpha, beta)
             if self._current_score > best_score:
                 best_portfolio = self._current_portfolio
@@ -95,6 +100,15 @@ class PortfolioOptimizer:
 
 
     def full_run(self):
-        for alpha in self.alpha_schedule:
+        # progress bar
+        if mo.running_in_notebook():
+            alpha_schedule_iter = mo.status.progress_bar(self.alpha_schedule,
+                                                            title="Collecting optimal portfolios")
+        else:
+            alpha_schedule_iter = tqdm(self.alpha_schedule,
+                                        desc="Collecting optimal portfolios")
+
+        for alpha in alpha_schedule_iter:
             self.run_fixed_alpha(alpha)
+
         return
