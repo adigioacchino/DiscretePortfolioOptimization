@@ -1,4 +1,4 @@
-import yfinance as yf
+import yfinance as yf # type: ignore
 import pandas as pd
 
 from tqdm import tqdm

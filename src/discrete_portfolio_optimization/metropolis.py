@@ -24,7 +24,7 @@ class PortfolioOptimizer:
             ):
         self.initial_portfolio = initial_portfolio.copy()
         self.rng = initial_portfolio.rng # share seed with portfolio if was provided
-        self.best_portfolios = []
+        self.best_portfolios: list[Portfolio] = []
         self.gamma = gamma
         # check that returns df is in *daily percentage* format
         if not np.all(returns_df.mean() >= -1):
