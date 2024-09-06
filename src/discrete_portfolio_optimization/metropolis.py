@@ -92,11 +92,23 @@ class PortfolioOptimizer:
         )
         best_portfolio = self._current_portfolio
         best_score = self._current_score
-        for beta in tqdm(
-            self.beta_schedule,
-            leave=False,
-            desc=f"Optimizing portfolio with alpha = {alpha:.2e}",
-        ):
+
+        # progress bar
+        if mo.running_in_notebook():
+            beta_schedule_iter = mo.status.progress_bar(
+                self.beta_schedule,
+                title=f"Optimizing portfolio",
+                subtitle=f"with alpha = {alpha:.2e}",
+                remove_on_exit=True,
+            )
+        else:
+            beta_schedule_iter = tqdm(
+                self.beta_schedule,
+                desc=f"Optimizing portfolio with alpha = {alpha:.2e}",
+                leave=False,
+            )
+
+        for beta in beta_schedule_iter:
             self._step(alpha, beta)
             if self._current_score > best_score:
                 best_portfolio = self._current_portfolio
