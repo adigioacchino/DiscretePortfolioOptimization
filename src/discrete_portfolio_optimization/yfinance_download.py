@@ -1,8 +1,9 @@
-import yfinance as yf # type: ignore
+import yfinance as yf  # type: ignore
 import pandas as pd
 
 from tqdm import tqdm
-import marimo as mo # to have marimo-compatible progress bars
+import marimo as mo  # to have marimo-compatible progress bars
+
 
 def download_close_price(ticker: str):
     """
@@ -11,7 +12,8 @@ def download_close_price(ticker: str):
     :return: pd.Series, the close price of the stock
     """
     data = yf.download(ticker, period="max", progress=False)
-    return data['Close']
+    return data["Close"]
+
 
 def get_close_price_df(tickers: str) -> pd.DataFrame:
     """
@@ -24,7 +26,9 @@ def get_close_price_df(tickers: str) -> pd.DataFrame:
 
     # define progress bar
     if mo.running_in_notebook():
-        symbols_iter = mo.status.progress_bar(symbols, title="Downloading Yahoo finance data")
+        symbols_iter = mo.status.progress_bar(
+            symbols, title="Downloading Yahoo finance data"
+        )
     else:
         symbols_iter = tqdm(symbols, desc="Downloading Yahoo finance data")
 
