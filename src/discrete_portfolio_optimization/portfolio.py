@@ -146,10 +146,12 @@ class Portfolio:
     def portfolio_metrics(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
     ) -> dict:
+        ret = self.get_day_return(returns_df, account_for_cash)
+        vol = self.get_day_volatility(returns_df, account_for_cash)
         return {
-            "Return": self.get_day_return(returns_df, account_for_cash),
-            "Volatility": self.get_day_volatility(returns_df, account_for_cash),
-            "Sharpe Ratio": self.get_sharpe(returns_df, account_for_cash),
+            "Return": ret,
+            "Volatility": vol,
+            "Sharpe Ratio": ret / vol,
         }
 
     def copy(self):

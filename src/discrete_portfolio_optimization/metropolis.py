@@ -80,7 +80,10 @@ class PortfolioOptimizer:
         new_score = self._portfolio_minus_energy(
             alpha, self.gamma, new_portfolio, self.returns_df
         )
-        if self.rng.random() < np.exp(beta * (new_score - self._current_score)):
+        if new_score > self._current_score:
+            self._current_portfolio = new_portfolio
+            self._current_score = new_score
+        elif self.rng.random() < np.exp(beta * (new_score - self._current_score)):
             self._current_portfolio = new_portfolio
             self._current_score = new_score
         return
