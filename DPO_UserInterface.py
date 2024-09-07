@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.8.7"
+__generated_with = "0.8.12"
 app = marimo.App(width="medium")
 
 
@@ -14,14 +14,27 @@ def __(mo):
 def __():
     import marimo as mo
 
-    from discrete_portfolio_optimization.yfinance_download import get_close_price_df
+    import json
+
+    from discrete_portfolio_optimization.yfinance_download import (
+        get_close_price_df,
+    )
     from discrete_portfolio_optimization.portfolio import Portfolio
     from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
 
     import pandas as pd
     import numpy as np
     import plotly.express as px
-    return Portfolio, PortfolioOptimizer, get_close_price_df, mo, np, pd, px
+    return (
+        Portfolio,
+        PortfolioOptimizer,
+        get_close_price_df,
+        json,
+        mo,
+        np,
+        pd,
+        px,
+    )
 
 
 @app.cell
@@ -32,8 +45,10 @@ def __(mo):
 
 @app.cell
 def __(mo):
-    symbols_string = mo.ui.text_area(value="META, AMZN, AAPL, NFLX, GOOGL", 
-                                         label="Enter comma-separated symbols")
+    symbols_string = mo.ui.text_area(
+        value="META, AMZN, AAPL, NFLX, GOOGL",
+        label="Enter comma-separated symbols",
+    )
     symbols_string
     return symbols_string,
 
@@ -58,74 +73,208 @@ def __(mo):
 
 @app.cell
 def __(mo, random_seed, total_value):
-    mo.vstack([
-        mo.md("""## Settings for initial portfolio"""),
-        total_value,
-        random_seed
-    ], align="center")
+    mo.vstack(
+        [mo.md("""## Settings for initial portfolio"""), total_value, random_seed],
+        align="center",
+    )
     return
 
 
 @app.cell
 def __(mo):
-    # UI elements - initial portfolio 
-    total_value = mo.ui.number(start=100, stop=100_000, step=100, 
-                               value=10_000,
-                               label= "Total portfolio value:"
-                              )
-    random_seed = mo.ui.number(start=1, stop=100, 
-                               value=53,
-                               label= "Random seed:"
-                              )
+    # UI elements - initial portfolio
+    total_value = mo.ui.number(
+        start=100,
+        stop=100_000,
+        step=100,
+        value=10_000,
+        label="Total portfolio value:",
+    )
+    random_seed = mo.ui.number(start=1, stop=100, value=53, label="Random seed:")
     return random_seed, total_value
 
 
 @app.cell
 def __(Portfolio, close_df, random_seed, total_value):
-    initial_pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=total_value.value, seed=random_seed.value)
+    initial_pft = Portfolio(
+        close_df.iloc[-1].to_list(),
+        tot_value=total_value.value,
+        seed=random_seed.value,
+    )
     return initial_pft,
+
+
+@app.cell
+def __(mo):
+    mo.md("""## Settings for Simulated Annealing""")
+    return
+
+
+@app.cell
+def __(mo):
+    # load from file the default values for sliders
+    po_kwargs_file = mo.ui.file(filetypes=[".json"], kind="area")
+    po_kwargs_file
+    return po_kwargs_file,
+
+
+@app.cell
+def __(json, po_kwargs_file):
+    # load from file the default values for sliders
+    if po_kwargs_file.value:
+        po_kwargs_defaults = json.loads(po_kwargs_file.value[0].contents)
+    else:
+        po_kwargs_defaults = {                          
+            "alpha0": -2,
+            "alpha1": 0.5,
+            "n_alphas": 25,
+            "gamma_switch": False,
+            "gamma": -1,
+            "delta_switch": False,
+            "delta": -1,
+            "n_therm_steps": 500,
+            "beta0": 1,
+            "beta1": 3,
+            "n_betas": 2500,
+            "n_steps_per_beta": 1,
+        }
+    return po_kwargs_defaults,
 
 
 @app.cell
 def __(
     alpha_slider,
     beta_slider,
-    gamma,
+    delta_switch,
+    gamma_switch,
     mo,
     n_alphas,
     n_betas,
     n_steps_per_beta,
     n_therm_steps,
 ):
-    mo.vstack([
-        mo.md("""## Settings for Simulated Annealing"""),
-        alpha_slider, n_alphas, gamma, 
-        n_therm_steps, beta_slider, n_betas, n_steps_per_beta
-    ], align="center")
+    mo.vstack(
+        [
+            mo.md(
+                "**Alpha**: a portfolio optimized with a large alpha will have lower volatility but also lower return."
+            ),
+            alpha_slider,
+            n_alphas,
+            mo.md(
+                "**Thermalization steps**: random changes to the portfolio done before starting optimization."
+            ),
+            n_therm_steps,
+            mo.md(
+                "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
+            ),
+            beta_slider,
+            n_betas,
+            n_steps_per_beta,
+            mo.md(
+                "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
+            ),
+            gamma_switch,
+            mo.md(
+                "**Delta**: a portfolio optimized with a large delta will have less cash."
+            ),
+            delta_switch,
+        ],
+        align="center",
+    )
     return
 
 
 @app.cell
-def __(mo):
+def __(delta, delta_switch, gamma, gamma_switch, mo):
+    switchable_sliders = []
+    if gamma_switch.value:
+        switchable_sliders.append(gamma)
+    if delta_switch.value:
+        switchable_sliders.append(delta)
+    mo.vstack(switchable_sliders, align="center")
+    return switchable_sliders,
+
+
+@app.cell
+def __(mo, po_kwargs_defaults):
     # UI elements - simulated annealing
-    alpha_slider = mo.ui.range_slider(start=-4, stop=4, step=0.5, value=[-2,0.5],
-                                      label="Range of alpha values (exponent of 10)", show_value=True)
-    n_alphas = mo.ui.slider(start=2, stop=500, step=1, value=25,
-                            label="Number of alpha values", show_value=True)
-    gamma = mo.ui.slider(start=-2, stop=2, step=0.5, value=-2,
-                         label="Gamma (exponent of 10)", show_value=True)
-    n_therm_steps = mo.ui.slider(start=0, stop=10_000, step=250, value=500,
-                                 label="Number of thermalization steps", show_value=True)
-    beta_slider = mo.ui.range_slider(start=-1, stop=5, step=0.5, value=[1,3],
-                                     label="Range of beta values (exponent of 10)", show_value=True)
-    n_betas = mo.ui.slider(start=1_000, stop=10_000, step=500, value=2_500,
-                           label="Number of different betas used", show_value=True)
-    n_steps_per_beta = mo.ui.slider(start=1, stop=10, step=1, value=1,
-                                    label="Number of SA steps done at each beta", show_value=True)
+    alpha_slider = mo.ui.range_slider(
+        start=-4,
+        stop=4,
+        step=0.5,
+        value=[po_kwargs_defaults["alpha0"], po_kwargs_defaults["alpha1"]],
+        label="Range of alpha values (exponent of 10)",
+        show_value=True,
+    )
+    n_alphas = mo.ui.slider(
+        start=2,
+        stop=500,
+        step=1,
+        value=po_kwargs_defaults["n_alphas"],
+        label="Number of alpha values",
+        show_value=True,
+    )
+    gamma_switch = mo.ui.switch(
+        value=po_kwargs_defaults["gamma_switch"], label="Use gamma"
+    )
+    gamma = mo.ui.slider(
+        start=-2,
+        stop=2,
+        step=0.1,
+        value=po_kwargs_defaults["gamma"],
+        label="Gamma (exponent of 10)",
+        show_value=True,
+    )
+    delta_switch = mo.ui.switch(
+        value=po_kwargs_defaults["delta_switch"], label="Use delta"
+    )
+    delta = mo.ui.slider(
+        start=-2,
+        stop=2,
+        step=0.1,
+        value=po_kwargs_defaults["delta"],
+        label="Delta (exponent of 10)",
+        show_value=True,
+    )
+    n_therm_steps = mo.ui.slider(
+        start=0,
+        stop=10_000,
+        step=250,
+        value=po_kwargs_defaults["n_therm_steps"],
+        label="Number of thermalization steps",
+        show_value=True,
+    )
+    beta_slider = mo.ui.range_slider(
+        start=-1,
+        stop=8,
+        step=0.5,
+        value=[po_kwargs_defaults["beta0"], po_kwargs_defaults["beta1"]],
+        label="Range of beta values (exponent of 10)",
+        show_value=True,
+    )
+    n_betas = mo.ui.slider(
+        start=1_000,
+        stop=10_000,
+        step=500,
+        value=po_kwargs_defaults["n_betas"],
+        label="Number of different betas used",
+        show_value=True,
+    )
+    n_steps_per_beta = mo.ui.slider(
+        start=1,
+        stop=10,
+        step=1,
+        value=po_kwargs_defaults["n_steps_per_beta"],
+        label="Number of SA steps done at each beta",
+        show_value=True,
+    )
     return (
         alpha_slider,
         beta_slider,
+        delta,
+        delta_switch,
         gamma,
+        gamma_switch,
         n_alphas,
         n_betas,
         n_steps_per_beta,
@@ -135,30 +284,78 @@ def __(mo):
 
 @app.cell
 def __(
-    PortfolioOptimizer,
     alpha_slider,
     beta_slider,
+    delta,
+    delta_switch,
     gamma,
-    initial_pft,
+    gamma_switch,
     n_alphas,
     n_betas,
     n_steps_per_beta,
     n_therm_steps,
-    returns_df,
 ):
+    # prepare kwarg for PortfolioOptimzer
+    PO_kwargs_download = {
+        "alpha0": alpha_slider.value[0],
+        "alpha1": alpha_slider.value[1],
+        "n_alphas": n_alphas.value,
+        "n_therm_steps": n_therm_steps.value,
+        "beta0": beta_slider.value[0],
+        "beta1": beta_slider.value[1],
+        "n_betas": n_betas.value,
+        "n_steps_per_beta": n_steps_per_beta.value,
+        "gamma_switch":  gamma_switch.value,
+        "delta_switch": delta_switch.value
+    }
+
+    if gamma_switch.value:
+        gamma_value = 10**gamma.value
+        PO_kwargs_download["gamma"] = gamma_value
+    else:
+        gamma_value = 0
+        PO_kwargs_download["gamma"] = 0
+    if delta_switch.value:
+        delta_value = 10**delta.value
+        PO_kwargs_download["delta"] = delta_value
+    else:
+        delta_value = 0
+        PO_kwargs_download["delta"] = 0
+
+
+    PO_kwargs = {
+        "alpha0": 10 ** alpha_slider.value[0],
+        "alpha1": 10 ** alpha_slider.value[1],
+        "n_alphas": n_alphas.value,
+        "gamma": gamma_value,
+        "delta": delta_value,
+        "n_therm_steps": n_therm_steps.value,
+        "beta0": 10 ** beta_slider.value[0],
+        "beta1": 10 ** beta_slider.value[1],
+        "n_betas": n_betas.value,
+        "n_steps_per_beta": n_steps_per_beta.value,
+    }
+    return PO_kwargs, PO_kwargs_download, delta_value, gamma_value
+
+
+@app.cell
+def __(PO_kwargs_download, json, mo):
+    # download kwargs for backup
+    mo.download(
+        json.dumps(PO_kwargs_download),
+        "PO_kwargs.json",
+        label="Download kwargs",   
+    )
+    return
+
+
+@app.cell
+def __(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
     po = PortfolioOptimizer(
-                            initial_pft, 
-                            returns_df=returns_df,
-                            alpha0=10**alpha_slider.value[0],
-                            alpha1=10**alpha_slider.value[1],
-                            n_alphas=n_alphas.value, 
-                            gamma=10**gamma.value,
-                            n_therm_steps=n_therm_steps.value,
-                            beta0=10**beta_slider.value[0],
-                            beta1=10**beta_slider.value[1],
-                            n_betas=n_betas.value,
-                            n_steps_per_beta=n_steps_per_beta.value
-                        )
+        initial_portfolio=initial_pft,
+        returns_df=returns_df,
+        **PO_kwargs,
+    )
     return po,
 
 
@@ -197,7 +394,7 @@ def __(mo):
 def __(mo, plot_button):
     mo.md(f"""
     ## Plot
-    After deciding the parameters, press this button to start the computation:
+    After completion of the computation, press this button to start the computation:
 
     {plot_button}
     """)
@@ -224,22 +421,30 @@ def __(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
     # "pure" portfolios
     _pure = ["Optimal" for _ in range(len(_metrics))]
     _n = len(returns_df.columns)
-    pure_portfolios = [Portfolio(
-                                close_df.iloc[-1].to_list(),    
-                                allocations=np.identity(_n, dtype=np.int64)[:, i].tolist()
-                                ) 
-                           for i in range(_n)]
+    pure_portfolios = [
+        Portfolio(
+            close_df.iloc[-1].to_list(),
+            allocations=np.identity(_n, dtype=np.int64)[:, i].tolist(),
+        )
+        for i in range(_n)
+    ]
     _metrics = [pft.portfolio_metrics(returns_df) for pft in pure_portfolios]
     _returns = _returns + [m["Return"] for m in _metrics]
     _volatilities = _volatilities + [m["Volatility"] for m in _metrics]
-    _indices = _indices + [len(_indices)+i for i in range(len(_metrics))]
+    _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
     _pure = _pure + ["Pure" for _ in range(len(_metrics))]
 
-    _plot_df = pd.DataFrame({"Return": _returns, "Volatility": _volatilities, 
-                             "Index": _indices, "Type": _pure})
-    _plot = px.scatter(_plot_df, x="Volatility", y="Return", hover_data="Index",
-                      color="Type"
-                      )
+    _plot_df = pd.DataFrame(
+        {
+            "Return": _returns,
+            "Volatility": _volatilities,
+            "Index": _indices,
+            "Type": _pure,
+        }
+    )
+    _plot = px.scatter(
+        _plot_df, x="Volatility", y="Return", hover_data="Index", color="Type"
+    )
     _plot.update_traces(
         marker_size=10,
         marker_line_width=2,
@@ -266,12 +471,21 @@ def __(
     selected_portfolios = [_pft_table[i] for i in selected_idxs]
 
     _returns = [pft.get_day_return(returns_df) for pft in selected_portfolios]
-    _volatilities = [pft.get_day_volatility(returns_df) for pft in selected_portfolios]
+    _volatilities = [
+        pft.get_day_volatility(returns_df) for pft in selected_portfolios
+    ]
     _allocations = [pft.allocations for pft in selected_portfolios]
     _cash_values = [pft.cash_value for pft in selected_portfolios]
     _symbols = [x.strip() for x in symbols_string.value.split(",")]
 
-    sp_df = pd.DataFrame(index=selected_idxs, data={"Return": _returns, "Volatility": _volatilities, "Cash": _cash_values})
+    sp_df = pd.DataFrame(
+        index=selected_idxs,
+        data={
+            "Return": _returns,
+            "Volatility": _volatilities,
+            "Cash": _cash_values,
+        },
+    )
     for i, symbol in enumerate(_symbols):
         sp_df[symbol] = [alloc[i] for alloc in _allocations]
     sp_df.drop_duplicates(inplace=True, keep="last")
@@ -279,6 +493,11 @@ def __(
 
     mo.ui.table(sp_df.round(2), show_column_summaries=False)
     return i, selected_idxs, selected_portfolios, sp_df, symbol
+
+
+@app.cell
+def __():
+    return
 
 
 if __name__ == "__main__":
