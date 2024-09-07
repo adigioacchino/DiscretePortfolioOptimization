@@ -15,7 +15,8 @@ class PortfolioOptimizer:
         alpha0: float = 1e1,
         alpha1: float = 1e3,
         n_alphas: int = 10,
-        gamma: float = 1.0,
+        gamma: float = 0.0,
+        delta: float = 0.0,
         n_therm_steps: int = 1_000,
         beta0: float = 1,
         beta1: float = 1e3,
@@ -26,6 +27,7 @@ class PortfolioOptimizer:
         self.rng = initial_portfolio.rng  # share seed with portfolio if was provided
         self.best_portfolios: list[Portfolio] = []
         self.gamma = gamma
+        self.delta = delta
         # check that returns df is in *daily percentage* format
         if not np.all(returns_df.mean() >= -1):
             warn(
@@ -50,14 +52,24 @@ class PortfolioOptimizer:
 
     @staticmethod
     def _portfolio_minus_energy(
-        alpha: float, gamma: float, portfolio: Portfolio, returns_df: pd.DataFrame
+        alpha: float, gamma: float, delta: float, 
+        portfolio: Portfolio, returns_df: pd.DataFrame
     ) -> float:
         portfolio_metrics = portfolio.portfolio_metrics(returns_df)
+        if gamma != 0:
+            # large gamma -> diversified portfolio
+            gamma_term = gamma * np.sum(portfolio.weights**2)
+        else:
+            gamma_term = 0
+        if delta != 0:
+            # large delta -> low cash
+            delta_term = delta * portfolio.cash_value / portfolio.tot_value
+        else:
+            delta_term = 0
         return (
             portfolio_metrics["Return"]
             - alpha * portfolio_metrics["Volatility"]  # large alpha -> low volatility
-            - gamma
-            * np.sum(portfolio.weights**2)  # large gamma -> diversified portfolio
+            - gamma_term - delta_term
         )
 
     @staticmethod
@@ -78,7 +90,7 @@ class PortfolioOptimizer:
         new_portfolio = self._current_portfolio.copy()
         new_portfolio.random_move()
         new_score = self._portfolio_minus_energy(
-            alpha, self.gamma, new_portfolio, self.returns_df
+            alpha, self.gamma, self.delta, new_portfolio, self.returns_df
         )
         if new_score > self._current_score:
             self._current_portfolio = new_portfolio
@@ -91,7 +103,8 @@ class PortfolioOptimizer:
     def run_fixed_alpha(self, alpha):
         self._current_portfolio = self.initial_portfolio
         self._current_score = self._portfolio_minus_energy(
-            alpha, self.gamma, self.initial_portfolio, self.returns_df
+            alpha, self.gamma, self.delta,
+            self.initial_portfolio, self.returns_df
         )
         best_portfolio = self._current_portfolio
         best_score = self._current_score

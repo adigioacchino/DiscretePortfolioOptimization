@@ -18,7 +18,7 @@ dep_tests = [
 ]
 
 @pytest.fixture
-def pft_closedf():
+def pft_closedf() -> tuple[Portfolio, pd.DataFrame]:
     close_df = pd.read_csv('tests/data/20240825_close.csv', index_col=0)
     pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000,
                     seed=42)
@@ -60,7 +60,8 @@ def test_portfolio_minus_energy(pft_closedf):
     pft, results_df = pft_closedf
     alpha = 0.1
     gamma = 0.1
-    energy = PortfolioOptimizer._portfolio_minus_energy(alpha, gamma, pft, results_df)
+    delta = 0.1
+    energy = PortfolioOptimizer._portfolio_minus_energy(alpha, gamma, delta, pft, results_df)
     assert isinstance(energy, float)
 
 
@@ -143,3 +144,20 @@ def test_runs_fixed_alpha_2(pft_closedf):
     assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft.weights)
     assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft1.weights)
     assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft2.weights)
+
+    # now case with large delta
+    po = PortfolioOptimizer(
+        pft,
+        results_df,
+        n_therm_steps = 1_000,
+        n_betas = 2_500,
+        n_steps_per_beta = 2,
+        delta = 100.
+    )
+
+    po.run_fixed_alpha(1.)
+    pft4 = po.best_portfolios[0]
+    assert pft4.cash_value < pft.cash_value
+    assert pft4.cash_value < pft1.cash_value
+    assert pft4.cash_value < pft2.cash_value
+    assert pft4.cash_value < pft3.cash_value
