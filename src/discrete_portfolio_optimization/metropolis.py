@@ -8,6 +8,30 @@ from warnings import warn
 
 
 class PortfolioOptimizer:
+    """
+    Class to optimize a portfolio using the Metropolis algorithm.
+
+    Args:
+        initial_portfolio: Portfolio, the initial portfolio to optimize
+        returns_df: pd.DataFrame, the returns of the assets in the portfolio
+        alpha0: float, the smallest alpha to use (larger alpha -> lower volatility)
+        alpha1: float, the largest alpha to use (larger alpha -> lower volatility)
+        n_alphas: int, the number of alphas to use, so the number of final optimized portfolios
+        gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
+        delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
+        n_therm_steps: int, the number of thermalization steps to use before starting the optimization
+        beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
+            `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+            portfolios separated by a random move.
+        beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
+            `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+            portfolios separated by a random move.
+        n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+            will make the algorithm more precise but slower.
+        n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+            Larger values will make the algorithm more precise but slower.
+    """
+
     def __init__(
         self,
         initial_portfolio: Portfolio,
@@ -23,6 +47,29 @@ class PortfolioOptimizer:
         n_betas: int = 5_000,
         n_steps_per_beta: int = 1,
     ):
+        """
+        Initialize the PortfolioOptimizer.
+
+        Args:
+            initial_portfolio: Portfolio, the initial portfolio to optimize
+            returns_df: pd.DataFrame, the returns of the assets in the portfolio
+            alpha0: float, the smallest alpha to use (larger alpha -> lower volatility)
+            alpha1: float, the largest alpha to use (larger alpha -> lower volatility)
+            n_alphas: int, the number of alphas to use, so the number of final optimized portfolios
+            gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
+            delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
+            n_therm_steps: int, the number of thermalization steps to use before starting the optimization
+            beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
+                `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+                portfolios separated by a random move.
+            beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
+                `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+                portfolios separated by a random move.
+            n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+                will make the algorithm more precise but slower.
+            n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+                Larger values will make the algorithm more precise but slower.
+        """
         self.initial_portfolio = initial_portfolio.copy()
         self.rng = initial_portfolio.rng  # share seed with portfolio if was provided
         self.best_portfolios: list[Portfolio] = []
@@ -52,9 +99,28 @@ class PortfolioOptimizer:
 
     @staticmethod
     def _portfolio_minus_energy(
-        alpha: float, gamma: float, delta: float, 
-        portfolio: Portfolio, returns_df: pd.DataFrame
+        alpha: float,
+        gamma: float,
+        delta: float,
+        portfolio: Portfolio,
+        returns_df: pd.DataFrame,
     ) -> float:
+        """
+        Compute the score of a portfolio.
+        The score is defined as:
+
+        `Return - alpha * Volatility - gamma * sum(weights**2) - delta * cash_value / tot_value`
+
+        Args:
+            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
+            gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
+            delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
+            portfolio: Portfolio, the portfolio to evaluate
+            returns_df: pd.DataFrame, the returns of the assets in the portfolio
+
+        Returns:
+            float, the score of the portfolio
+        """
         portfolio_metrics = portfolio.portfolio_metrics(returns_df)
         if gamma != 0:
             # large gamma -> diversified portfolio
@@ -69,7 +135,8 @@ class PortfolioOptimizer:
         return (
             portfolio_metrics["Return"]
             - alpha * portfolio_metrics["Volatility"]  # large alpha -> low volatility
-            - gamma_term - delta_term
+            - gamma_term
+            - delta_term
         )
 
     @staticmethod
@@ -80,6 +147,25 @@ class PortfolioOptimizer:
         n_betas: int,
         n_step_per_beta: int,
     ) -> np.ndarray:
+        """
+        Prepare the beta schedule for the Metropolis algorithm.
+
+        Args:
+            beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
+                `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+                portfolios separated by a random move.
+            beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
+                `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+                portfolios separated by a random move.
+            n_therm_steps: int, the number of thermalization steps to use before starting the optimization
+            n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+                will make the algorithm more precise but slower.
+            n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+                Larger values will make the algorithm more precise but slower.
+
+        Returns:
+            np.ndarray, the beta schedule to use in the Metropolis algorithm
+        """
         schedule1 = np.full(n_therm_steps, beta0)
         schedule2 = np.linspace(np.log(beta0), np.log(beta1), n_betas)
         schedule2 = np.repeat(schedule2, n_step_per_beta)
@@ -87,6 +173,16 @@ class PortfolioOptimizer:
         return np.concatenate([schedule1, schedule2])
 
     def _step(self, alpha, beta):
+        """
+        Perform a step of the Metropolis algorithm.
+        It results in potentially updating the `self._current_portfolio`
+        and `self._current_score` attributes.
+
+        Args:
+            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
+            beta: float, the beta parameter to use in the Metropolis algorithm
+
+        """
         new_portfolio = self._current_portfolio.copy()
         new_portfolio.random_move()
         new_score = self._portfolio_minus_energy(
@@ -101,10 +197,16 @@ class PortfolioOptimizer:
         return
 
     def run_fixed_alpha(self, alpha):
+        """
+        Run the optimization process for a fixed alpha.
+        It will store the best portfolio found in `self.best_portfolios`.
+
+        Args:
+            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
+        """
         self._current_portfolio = self.initial_portfolio
         self._current_score = self._portfolio_minus_energy(
-            alpha, self.gamma, self.delta,
-            self.initial_portfolio, self.returns_df
+            alpha, self.gamma, self.delta, self.initial_portfolio, self.returns_df
         )
         best_portfolio = self._current_portfolio
         best_score = self._current_score
@@ -113,7 +215,7 @@ class PortfolioOptimizer:
         if mo.running_in_notebook():
             beta_schedule_iter = mo.status.progress_bar(
                 self.beta_schedule,
-                title=f"Optimizing portfolio",
+                title="Optimizing portfolio",
                 subtitle=f"with alpha = {alpha:.2e}",
                 remove_on_exit=True,
             )
@@ -133,6 +235,9 @@ class PortfolioOptimizer:
         return
 
     def full_run(self):
+        """
+        Run the full optimization process.
+        """
         # progress bar
         if mo.running_in_notebook():
             alpha_schedule_iter = mo.status.progress_bar(
