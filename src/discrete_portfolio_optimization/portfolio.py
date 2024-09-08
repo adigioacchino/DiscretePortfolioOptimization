@@ -3,6 +3,17 @@ import pandas as pd
 
 
 class Portfolio:
+    """
+    Class to represent a portfolio of assets.
+
+    Attributes:
+        current_prices: list[float], the current prices of the assets
+        tot_value: float, the total value of the portfolio
+        allocations: list[float], the number of shares of each asset
+        cash_value: float, the cash value of the portfolio
+        seed: int, the seed for the random number generator
+    """
+
     def __init__(
         self,
         current_prices: list[float],
@@ -11,6 +22,17 @@ class Portfolio:
         cash_value: float = 0,
         seed: int | None = None,
     ):
+        """
+        Initialize the Portfolio object using either the total value of the portfolio
+        (and random allocations) or each allocation (the total value will be computed).
+
+        Args:
+            current_prices: list[float], the current prices of the assets
+            tot_value: float, the total value of the portfolio
+            allocations: list[float], the number of shares of each asset
+            cash_value: float, the cash value of the portfolio
+            seed: int, the seed for the random number generator
+        """
         self.current_prices = np.array(current_prices)
         self.num_assets = len(current_prices)
 
@@ -38,10 +60,16 @@ class Portfolio:
         self._sync_weights()  # self.weights
 
     def _sync_values(self):
+        """
+        Synchronize the asset and cash values with the current prices and allocations.
+        """
         self.asset_value = self.current_prices @ self.allocations
         self.cash_value = self.tot_value - self.asset_value
 
     def _sync_weights(self):
+        """
+        Synchronize the weights with the current prices and allocations.
+        """
         self.weights = np.array(
             [
                 self.current_prices[i] * self.allocations[i] / self.asset_value
@@ -50,6 +78,9 @@ class Portfolio:
         )
 
     def _random_allocations(self):
+        """
+        Generate random allocations for the assets.
+        """
         curr_value = 0
         allocations = [0 for _ in range(self.num_assets)]
         available_poss = np.arange(self.num_assets)
@@ -64,6 +95,10 @@ class Portfolio:
         return np.array(allocations)
 
     def random_move(self):
+        """
+        Perform a random move in the portfolio changing the allocations of two assets.
+        The two assets are chosen randomly and the move is the smallest possible in terms of value.
+        """
         # determine two random assets
         available_poss = np.arange(self.num_assets)
         pos1 = self.rng.choice(available_poss)
@@ -118,6 +153,19 @@ class Portfolio:
     def get_day_return(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
     ) -> float:
+        """
+        Compute the return of the portfolio for a day.
+        If `account_for_cash` is True, the return is multiplied by the fraction of the total value
+        that is allocated to assets.
+
+        Args:
+            returns_df: pd.DataFrame, the returns of the assets
+            account_for_cash: bool, whether to account for the cash in the portfolio
+
+        Returns:
+            float, the return of the portfolio
+
+        """
         if account_for_cash:
             # cash has no return
             allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
@@ -128,6 +176,19 @@ class Portfolio:
     def get_day_volatility(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
     ) -> float:
+        """
+        Compute the volatility of the portfolio for a day.
+        The volatility is computed as the weighted sum of the square root of the covariances of the assets.
+        If `account_for_cash` is True, the volatility is multiplied by the fraction of the total value
+        that is allocated to assets.
+
+        Args:
+            returns_df: pd.DataFrame, the returns of the assets
+            account_for_cash: bool, whether to account for the cash in the portfolio
+
+        Returns:
+            float, the volatility of the portfolio
+        """
         cov_matrix = returns_df.cov()
         if account_for_cash:
             # cash has no volatility
@@ -139,6 +200,18 @@ class Portfolio:
     def get_sharpe(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
     ) -> float:
+        """
+        Compute the Sharpe ratio of the portfolio.
+        If `account_for_cash` is True, the Sharpe ratio is computed using the fraction of the total value
+        that is allocated to assets.
+
+        Args:
+            returns_df: pd.DataFrame, the returns of the assets
+            account_for_cash: bool, whether to account for the cash in the portfolio
+
+        Returns:
+            float, the Sharpe ratio of the portfolio
+        """
         yret = self.get_day_return(returns_df, account_for_cash)
         ycov = self.get_day_volatility(returns_df, account_for_cash)
         return yret / ycov
@@ -146,6 +219,18 @@ class Portfolio:
     def portfolio_metrics(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
     ) -> dict:
+        """
+        Compute the return, volatility, and Sharpe ratio of the portfolio.
+        If `account_for_cash` is True, the metrics are computed using the fraction of the total value
+        that is allocated to assets.
+
+        Args:
+            returns_df: pd.DataFrame, the returns of the assets
+            account_for_cash: bool, whether to account for the cash in the portfolio
+
+        Returns:
+            dict, a dictionary with the return, volatility, and Sharpe ratio of the portfolio
+        """
         ret = self.get_day_return(returns_df, account_for_cash)
         vol = self.get_day_volatility(returns_df, account_for_cash)
         return {
@@ -155,6 +240,9 @@ class Portfolio:
         }
 
     def copy(self):
+        """
+        Return a copy of the Portfolio object.
+        """
         return Portfolio(
             self.current_prices,
             cash_value=self.cash_value,
