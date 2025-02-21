@@ -11,7 +11,7 @@ def test_download_close_price():
     close_price = download_close_price(ticker)
     assert isinstance(close_price, pd.Series)
     assert close_price.index.name == "Date"
-    assert close_price.name == "Close"
+    assert close_price.name == ticker
 
 @mark.dependency()
 def test_get_close_price_df():
@@ -31,7 +31,7 @@ def test_get_close_price_df():
     assert close_price_df.columns.tolist() == ["AAPL", "MSFT"]
 
     # now with a non-existing ticker
-    tickers = "AAPL,MSFT,XYZ"
+    tickers = "AAPL,MSFT,ABCDEFG"
     close_price_df = get_close_price_df(tickers)
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"

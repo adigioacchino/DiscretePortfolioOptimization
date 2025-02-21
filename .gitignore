@@ -10,3 +10,6 @@ coverage.*
 
 # vscode settings
 .vscode/
+
+# uv lock
+uv.lock

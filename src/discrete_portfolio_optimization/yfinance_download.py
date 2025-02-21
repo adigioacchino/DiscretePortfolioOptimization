@@ -16,7 +16,7 @@ def download_close_price(ticker: str) -> pd.Series:
         pd.Series, the close price of the stock
     """
     data = yf.download(ticker, period="max", progress=False)
-    return data["Close"]
+    return data["Close"][ticker]
 
 
 def get_close_price_df(tickers: str) -> pd.DataFrame:
