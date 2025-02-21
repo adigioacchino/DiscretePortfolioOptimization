@@ -1,17 +1,17 @@
 import marimo
 
-__generated_with = "0.8.12"
+__generated_with = "0.11.8"
 app = marimo.App(width="medium")
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""# Imports""")
     return
 
 
 @app.cell
-def __():
+def _():
     import marimo as mo
 
     import json
@@ -38,41 +38,41 @@ def __():
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""# Load data""")
     return
 
 
 @app.cell
-def __(mo):
+def _(mo):
     symbols_string = mo.ui.text_area(
         value="META, AMZN, AAPL, NFLX, GOOGL",
         label="Enter comma-separated symbols",
     )
     symbols_string
-    return symbols_string,
+    return (symbols_string,)
 
 
 @app.cell
-def __(get_close_price_df, symbols_string):
+def _(get_close_price_df, symbols_string):
     close_df = get_close_price_df(symbols_string.value)
-    return close_df,
+    return (close_df,)
 
 
 @app.cell
-def __(close_df):
+def _(close_df):
     returns_df = close_df.pct_change().dropna() * 100
-    return returns_df,
+    return (returns_df,)
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""# Computations""")
     return
 
 
 @app.cell
-def __(mo, random_seed, total_value):
+def _(mo, random_seed, total_value):
     mo.vstack(
         [mo.md("""## Settings for initial portfolio"""), total_value, random_seed],
         align="center",
@@ -81,7 +81,7 @@ def __(mo, random_seed, total_value):
 
 
 @app.cell
-def __(mo):
+def _(mo):
     # UI elements - initial portfolio
     total_value = mo.ui.number(
         start=100,
@@ -95,31 +95,31 @@ def __(mo):
 
 
 @app.cell
-def __(Portfolio, close_df, random_seed, total_value):
+def _(Portfolio, close_df, random_seed, total_value):
     initial_pft = Portfolio(
         close_df.iloc[-1].to_list(),
         tot_value=total_value.value,
         seed=random_seed.value,
     )
-    return initial_pft,
+    return (initial_pft,)
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""## Settings for Simulated Annealing""")
     return
 
 
 @app.cell
-def __(mo):
+def _(mo):
     # load from file the default values for sliders
     po_kwargs_file = mo.ui.file(filetypes=[".json"], kind="area")
     po_kwargs_file
-    return po_kwargs_file,
+    return (po_kwargs_file,)
 
 
 @app.cell
-def __(json, po_kwargs_file):
+def _(json, po_kwargs_file):
     # load from file the default values for sliders
     if po_kwargs_file.value:
         po_kwargs_defaults = json.loads(po_kwargs_file.value[0].contents)
@@ -138,11 +138,11 @@ def __(json, po_kwargs_file):
             "n_betas": 2500,
             "n_steps_per_beta": 1,
         }
-    return po_kwargs_defaults,
+    return (po_kwargs_defaults,)
 
 
 @app.cell
-def __(
+def _(
     alpha_slider,
     beta_slider,
     delta_switch,
@@ -185,18 +185,18 @@ def __(
 
 
 @app.cell
-def __(delta, delta_switch, gamma, gamma_switch, mo):
+def _(delta, delta_switch, gamma, gamma_switch, mo):
     switchable_sliders = []
     if gamma_switch.value:
         switchable_sliders.append(gamma)
     if delta_switch.value:
         switchable_sliders.append(delta)
     mo.vstack(switchable_sliders, align="center")
-    return switchable_sliders,
+    return (switchable_sliders,)
 
 
 @app.cell
-def __(mo, po_kwargs_defaults):
+def _(mo, po_kwargs_defaults):
     # UI elements - simulated annealing
     alpha_slider = mo.ui.range_slider(
         start=-4,
@@ -283,7 +283,7 @@ def __(mo, po_kwargs_defaults):
 
 
 @app.cell
-def __(
+def _(
     alpha_slider,
     beta_slider,
     delta,
@@ -339,7 +339,7 @@ def __(
 
 
 @app.cell
-def __(PO_kwargs_download, json, mo):
+def _(PO_kwargs_download, json, mo):
     # download kwargs for backup
     mo.download(
         json.dumps(PO_kwargs_download),
@@ -350,17 +350,17 @@ def __(PO_kwargs_download, json, mo):
 
 
 @app.cell
-def __(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
+def _(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
     po = PortfolioOptimizer(
         initial_portfolio=initial_pft,
         returns_df=returns_df,
         **PO_kwargs,
     )
-    return po,
+    return (po,)
 
 
 @app.cell
-def __(mo, run_computation_button):
+def _(mo, run_computation_button):
     mo.md(f"""
     ## Run computation
     After deciding the parameters, press this button to start the computation:
@@ -371,13 +371,13 @@ def __(mo, run_computation_button):
 
 
 @app.cell
-def __(mo):
+def _(mo):
     run_computation_button = mo.ui.run_button(label="Run optimization!")
-    return run_computation_button,
+    return (run_computation_button,)
 
 
 @app.cell
-def __(mo, po, run_computation_button):
+def _(mo, po, run_computation_button):
     mo.stop(not run_computation_button.value)
 
     po.full_run()
@@ -385,13 +385,13 @@ def __(mo, po, run_computation_button):
 
 
 @app.cell
-def __(mo):
+def _(mo):
     mo.md("""# Plotting""")
     return
 
 
 @app.cell
-def __(mo, plot_button):
+def _(mo, plot_button):
     mo.md(f"""
     ## Plot
     After completion of the computation, press this button to start the computation:
@@ -402,13 +402,13 @@ def __(mo, plot_button):
 
 
 @app.cell
-def __(mo):
+def _(mo):
     plot_button = mo.ui.run_button(label="Plot!")
-    return plot_button,
+    return (plot_button,)
 
 
 @app.cell
-def __(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
+def _(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
     # plot best portfolios in return vs volatility space
     mo.stop(not plot_button.value)
 
@@ -456,15 +456,7 @@ def __(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
 
 
 @app.cell
-def __(
-    mo,
-    opt_port_plot,
-    pd,
-    po,
-    pure_portfolios,
-    returns_df,
-    symbols_string,
-):
+def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df, symbols_string):
     # print table with selected portfolio info
     _pft_table = po.best_portfolios + pure_portfolios
     selected_idxs = [x["Index"] for x in opt_port_plot.value]
@@ -496,7 +488,7 @@ def __(
 
 
 @app.cell
-def __():
+def _():
     return
 
 
