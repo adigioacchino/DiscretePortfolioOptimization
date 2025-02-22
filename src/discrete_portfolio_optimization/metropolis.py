@@ -1,3 +1,4 @@
+from operator import call
 from discrete_portfolio_optimization.portfolio import Portfolio
 
 import numpy as np
@@ -234,7 +235,7 @@ class PortfolioOptimizer:
         self.best_portfolios.append(best_portfolio)
         return
 
-    def full_run(self):
+    def full_run(self, callback=None):
         """
         Run the full optimization process.
         """
@@ -250,5 +251,7 @@ class PortfolioOptimizer:
 
         for alpha in alpha_schedule_iter:
             self.run_fixed_alpha(alpha)
+            if callback is not None:
+                callback_res = callback(self)
 
-        return
+        return callback_res if callback is not None else None

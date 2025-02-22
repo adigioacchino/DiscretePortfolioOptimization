@@ -377,49 +377,48 @@ def _(mo):
 
 
 @app.cell
-def _(mo, po, run_computation_button):
-    mo.stop(not run_computation_button.value)
-
-    po.full_run()
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md("""# Plotting""")
-    return
-
-
-@app.cell
-def _(mo, plot_button):
-    mo.md(f"""
-    ## Plot
-    After completion of the computation, press this button to start the computation:
-
-    {plot_button}
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    plot_button = mo.ui.run_button(label="Plot!")
-    return (plot_button,)
-
-
-@app.cell
-def _(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
+def _(mo, pd, po, px):
     # plot best portfolios in return vs volatility space
-    mo.stop(not plot_button.value)
+    def plot_portfolios(best_portfolios, pure_portfolios, returns_df):
+        # portfolios just computed
+        _metrics = [
+            pft.portfolio_metrics(returns_df) for pft in po.best_portfolios
+        ]
+        _returns = [m["Return"] for m in _metrics]
+        _volatilities = [m["Volatility"] for m in _metrics]
+        _indices = [i for i in range(len(_metrics))]
 
-    # portfolios just computed
-    _metrics = [pft.portfolio_metrics(returns_df) for pft in po.best_portfolios]
-    _returns = [m["Return"] for m in _metrics]
-    _volatilities = [m["Volatility"] for m in _metrics]
-    _indices = [i for i in range(len(_metrics))]
+        _pure = ["Optimized" for _ in range(len(_metrics))]
+        _metrics = [pft.portfolio_metrics(returns_df) for pft in pure_portfolios]
+        _returns = _returns + [m["Return"] for m in _metrics]
+        _volatilities = _volatilities + [m["Volatility"] for m in _metrics]
+        _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
+        _pure = _pure + ["Pure" for _ in range(len(_metrics))]
 
-    # "pure" portfolios
-    _pure = ["Optimal" for _ in range(len(_metrics))]
+        _plot_df = pd.DataFrame(
+            {
+                "Return": _returns,
+                "Volatility": _volatilities,
+                "Index": _indices,
+                "Type": _pure,
+            }
+        )
+        _plot = px.scatter(
+            _plot_df, x="Volatility", y="Return", hover_data="Index", color="Type"
+        )
+        _plot.update_traces(
+            marker_size=10,
+            marker_line_width=2,
+        )
+
+        mo.output.replace(mo.ui.plotly(_plot))
+        return mo.ui.plotly(_plot)
+    return (plot_portfolios,)
+
+
+@app.cell
+def _(Portfolio, close_df, np, returns_df):
+    # prepare "pure" portfolios
     _n = len(returns_df.columns)
     pure_portfolios = [
         Portfolio(
@@ -428,31 +427,31 @@ def _(Portfolio, close_df, mo, np, pd, plot_button, po, px, returns_df):
         )
         for i in range(_n)
     ]
-    _metrics = [pft.portfolio_metrics(returns_df) for pft in pure_portfolios]
-    _returns = _returns + [m["Return"] for m in _metrics]
-    _volatilities = _volatilities + [m["Volatility"] for m in _metrics]
-    _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
-    _pure = _pure + ["Pure" for _ in range(len(_metrics))]
+    return (pure_portfolios,)
 
-    _plot_df = pd.DataFrame(
-        {
-            "Return": _returns,
-            "Volatility": _volatilities,
-            "Index": _indices,
-            "Type": _pure,
-        }
-    )
-    _plot = px.scatter(
-        _plot_df, x="Volatility", y="Return", hover_data="Index", color="Type"
-    )
-    _plot.update_traces(
-        marker_size=10,
-        marker_line_width=2,
-    )
 
-    opt_port_plot = mo.ui.plotly(_plot)
+@app.cell
+def _(
+    mo,
+    plot_portfolios,
+    po,
+    pure_portfolios,
+    returns_df,
+    run_computation_button,
+):
+    # here the computation is actually run
+    mo.stop(not run_computation_button.value)
+
+
+    def plot_portfolios_closure(
+        best_portfolios, pure_portfolios=pure_portfolios, returns_df=returns_df
+    ):
+        return plot_portfolios(best_portfolios, pure_portfolios, returns_df)
+
+
+    opt_port_plot = po.full_run(callback=plot_portfolios_closure)
     opt_port_plot
-    return opt_port_plot, pure_portfolios
+    return opt_port_plot, plot_portfolios_closure
 
 
 @app.cell
@@ -481,9 +480,10 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df, symbols_string):
     for i, symbol in enumerate(_symbols):
         sp_df[symbol] = [alloc[i] for alloc in _allocations]
     sp_df.drop_duplicates(inplace=True, keep="last")
+    sp_df.reset_index(inplace=True)
 
 
-    mo.ui.table(sp_df.round(2), show_column_summaries=False)
+    mo.ui.table(sp_df.round(2), show_column_summaries=False, selection=None)
     return i, selected_idxs, selected_portfolios, sp_df, symbol
 
 
