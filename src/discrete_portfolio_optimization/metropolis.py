@@ -1,4 +1,3 @@
-from operator import call
 from discrete_portfolio_optimization.portfolio import Portfolio
 
 import numpy as np

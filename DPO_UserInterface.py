@@ -5,12 +5,6 @@ app = marimo.App(width="medium")
 
 
 @app.cell
-def _(mo):
-    mo.md("""# Imports""")
-    return
-
-
-@app.cell
 def _():
     import marimo as mo
 
@@ -411,7 +405,8 @@ def _(mo, pd, po, px):
             marker_line_width=2,
         )
 
-        mo.output.replace(mo.ui.plotly(_plot))
+        # mo.output.replace(mo.ui.plotly(_plot))
+        mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
         return mo.ui.plotly(_plot)
     return (plot_portfolios,)
 
