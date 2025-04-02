@@ -231,6 +231,7 @@ class PortfolioOptimizer:
             if self._current_score > best_score:
                 best_portfolio = self._current_portfolio
                 best_score = self._current_score
+        best_portfolio.alpha = alpha
         self.best_portfolios.append(best_portfolio)
         return
 

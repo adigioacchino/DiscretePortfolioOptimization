@@ -35,6 +35,7 @@ class Portfolio:
         """
         self.current_prices = np.array(current_prices)
         self.num_assets = len(current_prices)
+        self.alpha = None  # alpha is not used in this class, but it is used in the optimization class
 
         if seed is not None:
             self.rng = np.random.default_rng(seed)
