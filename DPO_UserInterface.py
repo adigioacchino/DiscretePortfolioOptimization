@@ -227,10 +227,11 @@ def _(mo, po_kwargs_defaults):
     alpha_slider = mo.ui.range_slider(
         start=-4,
         stop=4,
-        step=0.5,
+        step=0.1,
         value=[po_kwargs_defaults["alpha0"], po_kwargs_defaults["alpha1"]],
         label="Range of alpha values (exponent of 10)",
-        show_value=True,
+        show_value=False,
+        full_width=True,
     )
     n_alphas = mo.ui.slider(
         start=2,
