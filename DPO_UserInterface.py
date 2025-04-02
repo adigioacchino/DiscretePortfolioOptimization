@@ -234,7 +234,7 @@ def _(mo, po_kwargs_defaults):
     )
     n_alphas = mo.ui.slider(
         start=2,
-        stop=500,
+        stop=50,
         step=1,
         value=po_kwargs_defaults["n_alphas"],
         label="Number of alpha values",
@@ -406,13 +406,14 @@ def _(mo):
 
 
 @app.cell
-def _(mo, pd, po, px):
+def _(mo, np, pd, po, px):
     # plot best portfolios in return vs volatility space
     def plot_portfolios(best_portfolios, pure_portfolios, returns_df):
         # portfolios just computed
         _metrics = [
             pft.portfolio_metrics(returns_df) for pft in po.best_portfolios
         ]
+        _alphas = [pft.alpha for pft in po.best_portfolios]
         _returns = [m["Return"] for m in _metrics]
         _volatilities = [m["Volatility"] for m in _metrics]
         _indices = [i for i in range(len(_metrics))]
@@ -424,23 +425,67 @@ def _(mo, pd, po, px):
         _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
         _pure = _pure + ["Pure" for _ in range(len(_metrics))]
 
-        _plot_df = pd.DataFrame(
+        # Create optimized df
+        optimized_df = pd.DataFrame(
             {
-                "Return": _returns,
-                "Volatility": _volatilities,
-                "Index": _indices,
-                "Type": _pure,
+                "Return": _returns[: len(_alphas)],
+                "Volatility": _volatilities[: len(_alphas)],
+                "Index": _indices[: len(_alphas)],
+                "Type": _pure[: len(_alphas)],
+                "LogAlpha": np.log10(
+                    [max(a, 1e-10) for a in _alphas]
+                ),  # Use a minimum value to avoid log(0)
             }
         )
-        _plot = px.scatter(
-            _plot_df, x="Volatility", y="Return", hover_data="Index", color="Type"
+
+        # Create pure portfolios df
+        pure_df = pd.DataFrame(
+            {
+                "Return": _returns[len(_alphas) :],
+                "Volatility": _volatilities[len(_alphas) :],
+                "Index": _indices[len(_alphas) :],
+                "Type": _pure[len(_alphas) :],
+            }
         )
+
+        # Create figure with optimized portfolios using blue colorscale on log scale
+        _plot = px.scatter(
+            optimized_df,
+            x="Volatility",
+            y="Return",
+            color="LogAlpha",  # Use log scale for coloring
+            color_continuous_scale="Blues",
+            hover_data={
+                "Type": True,
+                "Volatility": ":.2f",
+                "Return": ":.2f",
+                "LogAlpha": ":.2f",  # Hide LogAlpha in hover
+                "Index": True,
+            },
+        )
+
+        # Add pure portfolios as orange markers
+        pure_trace = px.scatter(
+            pure_df,
+            x="Volatility",
+            y="Return",
+            hover_data={
+                "Type": True,
+                "Volatility": ":.2f",
+                "Return": ":.2f",
+                "Index": True,
+            },
+        ).data[0]
+
+        pure_trace.marker.color = "orange"
+        pure_trace.marker.symbol = "x"
+        _plot.add_trace(pure_trace)
+
         _plot.update_traces(
             marker_size=10,
             marker_line_width=2,
         )
 
-        # mo.output.replace(mo.ui.plotly(_plot))
         mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
         return mo.ui.plotly(_plot)
     return (plot_portfolios,)
@@ -532,7 +577,11 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df, symbols_string):
     sp_df.reset_index(inplace=True)
 
     if len(sp_df) > 0:
-        _out = mo.ui.table(sp_df.round(2), show_column_summaries=False, selection=None)
+        _out = mo.ui.table(
+            sp_df.round(2),
+            show_column_summaries=False,
+            selection=None,
+        )
     else:
         _out = mo.md("Select portfolios to see details.")
 
