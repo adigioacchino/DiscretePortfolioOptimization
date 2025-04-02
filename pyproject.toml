@@ -26,4 +26,5 @@ dev-dependencies = [
     "mypy>=1.11.2",
     "pandas-stubs>=2.2.2.240807",
     "types-tqdm>=4.66.0.20240417",
+    "google-generativeai>=0.8.4",
 ]

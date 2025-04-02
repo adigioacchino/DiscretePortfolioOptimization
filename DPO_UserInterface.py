@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.11.8"
+__generated_with = "0.12.0"
 app = marimo.App(width="medium")
 
 
@@ -9,6 +9,9 @@ def _():
     import marimo as mo
 
     import json
+    import os
+    import tempfile
+    import pickle
 
     from discrete_portfolio_optimization.yfinance_download import (
         get_close_price_df,
@@ -19,15 +22,44 @@ def _():
     import pandas as pd
     import numpy as np
     import plotly.express as px
+
+    # Function to get path to temporary file
+    def get_temp_file_path():
+        temp_dir = tempfile.gettempdir()
+        return os.path.join(temp_dir, "portfolio_optimization_results.pkl")
+
+    # Function to save results to temporary file
+    def save_results_to_temp_file(portfolios):
+        temp_file_path = get_temp_file_path()
+        with open(temp_file_path, 'wb') as f:
+            pickle.dump(portfolios, f)
+
+    # Function to load results from temporary file
+    def load_results_from_temp_file():
+        temp_file_path = get_temp_file_path()
+        if os.path.exists(temp_file_path):
+            try:
+                with open(temp_file_path, 'rb') as f:
+                    return pickle.load(f)
+            except Exception as e:
+                print(f"Error loading saved results: {e}")
+                return None
+        return None
     return (
         Portfolio,
         PortfolioOptimizer,
         get_close_price_df,
+        get_temp_file_path,
         json,
+        load_results_from_temp_file,
         mo,
         np,
+        os,
         pd,
+        pickle,
         px,
+        save_results_to_temp_file,
+        tempfile,
     )
 
 
@@ -354,12 +386,14 @@ def _(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
 
 
 @app.cell
-def _(mo, run_computation_button):
+def _(force_recompute, mo, run_computation_button):
     mo.md(f"""
     ## Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
+
+    {force_recompute}
     """)
     return
 
@@ -367,7 +401,8 @@ def _(mo, run_computation_button):
 @app.cell
 def _(mo):
     run_computation_button = mo.ui.run_button(label="Run optimization!")
-    return (run_computation_button,)
+    force_recompute = mo.ui.checkbox(value=False, label="Force recomputation even if previous results exist")
+    return force_recompute, run_computation_button
 
 
 @app.cell
@@ -427,24 +462,43 @@ def _(Portfolio, close_df, np, returns_df):
 
 @app.cell
 def _(
+    force_recompute,
+    load_results_from_temp_file,
     mo,
     plot_portfolios,
     po,
     pure_portfolios,
     returns_df,
     run_computation_button,
+    save_results_to_temp_file,
 ):
     # here the computation is actually run
     mo.stop(not run_computation_button.value)
-
 
     def plot_portfolios_closure(
         best_portfolios, pure_portfolios=pure_portfolios, returns_df=returns_df
     ):
         return plot_portfolios(best_portfolios, pure_portfolios, returns_df)
 
+    # Check for existing saved portfolio results
+    _saved_portfolios = None
+    if not force_recompute.value:
+        _saved_portfolios = load_results_from_temp_file()
 
+    if _saved_portfolios is not None and not force_recompute.value:
+        # Use existing results
+        po.best_portfolios = _saved_portfolios  # Restore saved portfolios
+        mo.output.append(mo.md("*Using previously computed results. Check 'Force recomputation' to run a new optimization.*"))
+        mo.output.replace_at_index(plot_portfolios_closure(po.best_portfolios), 1)
+    else:
+        po.best_portfolios = []
+        mo.output.append(mo.md("*No previously computed results found or force recomputation is enabled.*"))
+
+    # Run new optimization in any case
     opt_port_plot = po.full_run(callback=plot_portfolios_closure)
+    # Save just the portfolios, not the UI element
+    save_results_to_temp_file(po.best_portfolios)
+
     opt_port_plot
     return opt_port_plot, plot_portfolios_closure
 
@@ -477,8 +531,12 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df, symbols_string):
     sp_df.drop_duplicates(inplace=True, keep="last")
     sp_df.reset_index(inplace=True)
 
+    if len(sp_df) > 0:
+        _out = mo.ui.table(sp_df.round(2), show_column_summaries=False, selection=None)
+    else:
+        _out = mo.md("Select portfolios to see details.")
 
-    mo.ui.table(sp_df.round(2), show_column_summaries=False, selection=None)
+    _out
     return i, selected_idxs, selected_portfolios, sp_df, symbol
 
 
