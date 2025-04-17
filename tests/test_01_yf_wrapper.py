@@ -13,6 +13,10 @@ def test_download_close_price():
     assert close_price.index.name == "Date"
     assert close_price.name == ticker
 
+    ticker = "aapl"
+    close_price2 = download_close_price(ticker)
+    assert close_price.equals(close_price2)
+
 @mark.dependency()
 def test_get_close_price_df():
     # Test the function get_close_price_df
