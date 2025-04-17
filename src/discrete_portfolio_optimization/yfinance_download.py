@@ -15,6 +15,8 @@ def download_close_price(ticker: str) -> pd.Series:
     Returns:
         pd.Series, the close price of the stock
     """
+    # cast ticker to upper case
+    ticker = ticker.upper()
     data = yf.download(ticker, period="max", progress=False)
     return data["Close"][ticker]
 
