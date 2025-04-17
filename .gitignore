@@ -13,3 +13,6 @@ coverage.*
 
 # uv lock
 uv.lock
+
+# marimo settings
+.marimo.toml
