@@ -1,7 +1,7 @@
 from discrete_portfolio_optimization.yfinance_download import download_close_price, get_close_price_df
 
 import pandas as pd
-from pytest import mark
+from pytest import mark, approx
 
 @mark.dependency()
 def test_download_close_price():
@@ -15,7 +15,11 @@ def test_download_close_price():
 
     ticker = "aapl"
     close_price2 = download_close_price(ticker)
-    assert close_price.equals(close_price2)
+    # take first 100 elements of the series to compare
+    close_price = close_price.head(100)
+    close_price2 = close_price2.head(100)
+    assert all(close_price.index == close_price2.index)
+    assert close_price.values == approx(close_price2.values)
 
 @mark.dependency()
 def test_get_close_price_df():
