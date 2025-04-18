@@ -1,10 +1,10 @@
 import marimo
 
 __generated_with = "0.12.10"
-app = marimo.App(width="medium")
+app = marimo.App(width="columns")
 
 
-@app.cell
+@app.cell(column=0)
 def _():
     import marimo as mo
 
@@ -22,7 +22,24 @@ def _():
     import pandas as pd
     import numpy as np
     import plotly.express as px
+    return (
+        Portfolio,
+        PortfolioOptimizer,
+        get_close_price_df,
+        json,
+        mo,
+        np,
+        os,
+        pd,
+        pickle,
+        px,
+        tempfile,
+    )
 
+
+@app.cell
+def _(os, pickle, tempfile):
+    # define useful functions
 
     # Function to get path to temporary file
     def get_temp_file_path():
@@ -49,24 +66,13 @@ def _():
                 return None
         return None
     return (
-        Portfolio,
-        PortfolioOptimizer,
-        get_close_price_df,
         get_temp_file_path,
-        json,
         load_results_from_temp_file,
-        mo,
-        np,
-        os,
-        pd,
-        pickle,
-        px,
         save_results_to_temp_file,
-        tempfile,
     )
 
 
-@app.cell
+@app.cell(column=1)
 def _(mo):
     mo.md(
         """
@@ -83,59 +89,20 @@ def _(mo):
 def _(mo):
     symbols_string = mo.ui.text_area(
         value="META, AMZN, AAPL, NFLX, GOOGL",
-        label="Enter comma-separated symbols",
     )
-    symbols_string
-    return (symbols_string,)
-
-
-@app.cell
-def _(get_close_price_df, mo, pd, symbols_string):
-    # fetch data from Yahoo Finance
-    _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
-        symbols_string.value
+    download_from_yf_button = mo.ui.run_button(
+        label="Download data from Yahoo Finance",
     )
-
-    # Create a dictionary mapping tickers to status emojis
-    # Combine hit and miss tickers to get all attempted tickers
-    # Use sorted list for consistent order
-    _all_tickers = sorted(list(set(_tickers_hit) | set(_tickers_miss)))
-    _status_map = {ticker: "✅" for ticker in _tickers_hit}
-    _status_map.update({ticker: "❌" for ticker in _tickers_miss})
-
-    # Create a pandas Series based on the sorted list to maintain order
-    # Ensure pandas is imported, usually as pd
-    # Assuming pd is already imported from previous cells
-    _status_series = pd.Series(
-        {ticker: _status_map[ticker] for ticker in _all_tickers},
-        name="Historical data found in YF",
+    mo.vstack(
+        [symbols_string, download_from_yf_button],
+        #align="center",
     )
-    _status_series.index.name = "Ticker"
-
-    # Convert Series to DataFrame for display
-    _status_df = _status_series.to_frame()
-
-    # Display the table (in a notebook, the last expression is displayed)
-    mo.output.append(
-        mo.center(
-            mo.ui.table(
-                _status_df,
-                selection=None,
-                show_download=False,
-                show_column_summaries=False,
-            )
-        )
-    )
-
-    # define useful vars for computations
-    returns_df = _close_df.pct_change().dropna() * 100
-    ticker_prices = _close_df.iloc[-1].to_list()
-    return returns_df, ticker_prices
+    return download_from_yf_button, symbols_string
 
 
 @app.cell
 def _(mo):
-    mo.md("""****# Computations""")
+    mo.md("""# Computations""")
     return
 
 
@@ -649,6 +616,51 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df):
 @app.cell
 def _():
     return
+
+
+@app.cell(column=2)
+def _(download_from_yf_button, get_close_price_df, mo, pd, symbols_string):
+    # fetch data from Yahoo Finance
+    mo.stop(not download_from_yf_button.value)
+    _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
+        symbols_string.value
+    )
+
+    # Create a dictionary mapping tickers to status emojis
+    # Combine hit and miss tickers to get all attempted tickers
+    # Use sorted list for consistent order
+    _all_tickers = sorted(list(set(_tickers_hit) | set(_tickers_miss)))
+    _status_map = {ticker: "✅" for ticker in _tickers_hit}
+    _status_map.update({ticker: "❌" for ticker in _tickers_miss})
+
+    # Create a pandas Series based on the sorted list to maintain order
+    # Ensure pandas is imported, usually as pd
+    # Assuming pd is already imported from previous cells
+    _status_series = pd.Series(
+        {ticker: _status_map[ticker] for ticker in _all_tickers},
+        name="Historical data found in YF",
+    )
+    _status_series.index.name = "Ticker"
+
+    # Convert Series to DataFrame for display
+    _status_df = _status_series.to_frame()
+
+    # Display the table (in a notebook, the last expression is displayed)
+    mo.output.append(
+        mo.center(
+            mo.ui.table(
+                _status_df,
+                selection=None,
+                show_download=False,
+                show_column_summaries=False,
+            )
+        )
+    )
+
+    # define useful vars for computations
+    returns_df = _close_df.pct_change().dropna() * 100
+    ticker_prices = _close_df.iloc[-1].to_list()
+    return returns_df, ticker_prices
 
 
 if __name__ == "__main__":
