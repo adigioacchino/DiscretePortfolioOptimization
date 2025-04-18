@@ -1,7 +1,11 @@
-from discrete_portfolio_optimization.yfinance_download import download_close_price, get_close_price_df
+from discrete_portfolio_optimization.yfinance_download import (
+    download_close_price,
+    get_close_price_df,
+)
 
 import pandas as pd
 from pytest import mark, approx
+
 
 @mark.dependency()
 def test_download_close_price():
@@ -21,26 +25,33 @@ def test_download_close_price():
     assert all(close_price.index == close_price2.index)
     assert close_price.values == approx(close_price2.values)
 
+
 @mark.dependency()
 def test_get_close_price_df():
     # Test the function get_close_price_df
     # The function should return a pd.DataFrame
     tickers = "AAPL , MSFT "
-    close_price_df = get_close_price_df(tickers)
+    close_price_df, tickers_hits, tickers_miss = get_close_price_df(tickers)
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.columns.tolist() == ["AAPL", "MSFT"]
+    assert tickers_hits == ["AAPL", "MSFT"]
+    assert tickers_miss == []
 
     # again without spaces
     tickers = "AAPL,MSFT"
-    close_price_df = get_close_price_df(tickers)
+    close_price_df, tickers_hits, tickers_miss = get_close_price_df(tickers)
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.columns.tolist() == ["AAPL", "MSFT"]
+    assert tickers_hits == ["AAPL", "MSFT"]
+    assert tickers_miss == []
 
     # now with a non-existing ticker
     tickers = "AAPL,MSFT,ABCDEFG"
-    close_price_df = get_close_price_df(tickers)
+    close_price_df, tickers_hits, tickers_miss = get_close_price_df(tickers)
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.columns.tolist() == ["AAPL", "MSFT"]
+    assert tickers_hits == ["AAPL", "MSFT"]
+    assert tickers_miss == ["ABCDEFG"]
