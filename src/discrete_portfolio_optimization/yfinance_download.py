@@ -17,11 +17,11 @@ def download_close_price(ticker: str) -> pd.Series:
     """
     # cast ticker to upper case
     ticker = ticker.upper()
-    data = yf.download(ticker, period="max", progress=False)
+    data = yf.download(ticker, period="max", progress=False, auto_adjust=True)
     return data["Close"][ticker]
 
 
-def get_close_price_df(tickers: str) -> pd.DataFrame:
+def get_close_price_df(tickers: str) -> tuple[pd.DataFrame, list, list]:
     """
     Download the close price of a list of stocks from Yahoo Finance.
 
@@ -30,6 +30,8 @@ def get_close_price_df(tickers: str) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame, the close price of the stocks
+        list, the tickers that were successfully downloaded
+        list, the tickers that were not found
     """
     all_data = dict()
     symbols = [x.strip() for x in tickers.split(",")]
@@ -42,10 +44,18 @@ def get_close_price_df(tickers: str) -> pd.DataFrame:
     else:
         symbols_iter = tqdm(symbols, desc="Downloading Yahoo finance data")
 
+    ticker_hits = []
+    ticker_misses = []
     for ticker in symbols_iter:
-        t_data = download_close_price(ticker)
+        try:
+            t_data = download_close_price(ticker)
+        except Exception as e:
+            print(f"Error downloading {ticker}: {e}")
+            t_data = pd.Series()
         if len(t_data) > 0:
-            all_data[ticker] = download_close_price(ticker)
+            all_data[ticker] = t_data
+            ticker_hits.append(ticker)
         else:
+            ticker_misses.append(ticker)
             print(f"Ticker {ticker} not found, skipping")
-    return pd.DataFrame(all_data).dropna()
+    return pd.DataFrame(all_data).dropna(), ticker_hits, ticker_misses
