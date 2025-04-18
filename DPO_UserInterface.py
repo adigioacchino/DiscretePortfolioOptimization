@@ -68,7 +68,14 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md("""# Load data""")
+    mo.md(
+        """
+        # Fetch data from Yahoo Finance
+        Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
+
+        ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
+        """
+    )
     return
 
 
@@ -101,7 +108,7 @@ def _(get_close_price_df, mo, pd, symbols_string):
     # Assuming pd is already imported from previous cells
     _status_series = pd.Series(
         {ticker: _status_map[ticker] for ticker in _all_tickers},
-        name="Historical data found in Yahoo Finance",
+        name="Historical data found in YF",
     )
     _status_series.index.name = "Ticker"
 
@@ -109,7 +116,16 @@ def _(get_close_price_df, mo, pd, symbols_string):
     _status_df = _status_series.to_frame()
 
     # Display the table (in a notebook, the last expression is displayed)
-    mo.output.append(mo.center(mo.ui.table(_status_df, selection=None)))
+    mo.output.append(
+        mo.center(
+            mo.ui.table(
+                _status_df,
+                selection=None,
+                show_download=False,
+                show_column_summaries=False,
+            )
+        )
+    )
 
     # define useful vars for computations
     returns_df = _close_df.pct_change().dropna() * 100
@@ -119,7 +135,7 @@ def _(get_close_price_df, mo, pd, symbols_string):
 
 @app.cell
 def _(mo):
-    mo.md("""# Computations""")
+    mo.md("""****# Computations""")
     return
 
 
