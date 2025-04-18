@@ -42,7 +42,7 @@ def _(mo):
 def _(mo, random_seed, total_value):
     mo.vstack(
         [mo.md("""## Settings for initial portfolio"""), total_value, random_seed],
-        align="center",
+        align="start",
     )
     return
 
@@ -72,39 +72,22 @@ def _(Portfolio, random_seed, ticker_prices, total_value):
 
 
 @app.cell
-def _(mo):
-    mo.md("""## Settings for Simulated Annealing""")
-    return
-
-
-@app.cell
-def _(mo):
+def _():
     # load from file the default values for sliders
-    po_kwargs_file = mo.ui.file(filetypes=[".json"], kind="area")
-    po_kwargs_file
-    return (po_kwargs_file,)
-
-
-@app.cell
-def _(json, po_kwargs_file):
-    # load from file the default values for sliders
-    if po_kwargs_file.value:
-        po_kwargs_defaults = json.loads(po_kwargs_file.value[0].contents)
-    else:
-        po_kwargs_defaults = {
-            "alpha0": -2,
-            "alpha1": 0.5,
-            "n_alphas": 25,
-            "gamma_switch": False,
-            "gamma": -1,
-            "delta_switch": False,
-            "delta": -1,
-            "n_therm_steps": 500,
-            "beta0": 1,
-            "beta1": 3,
-            "n_betas": 2500,
-            "n_steps_per_beta": 1,
-        }
+    po_kwargs_defaults = {
+        "alpha0": -2,
+        "alpha1": 0.5,
+        "n_alphas": 5,
+        "gamma_switch": False,
+        "gamma": -1,
+        "delta_switch": False,
+        "delta": -1,
+        "n_therm_steps": 500,
+        "beta0": 1,
+        "beta1": 3,
+        "n_betas": 2500,
+        "n_steps_per_beta": 1,
+    }
     return (po_kwargs_defaults,)
 
 
@@ -120,33 +103,45 @@ def _(
     n_steps_per_beta,
     n_therm_steps,
 ):
+    _adv_settings = mo.accordion(
+        {
+            "### Advanced settings:": mo.vstack(
+                [
+                    mo.md(
+                        "**Thermalization steps**: random changes to the portfolio done before starting optimization."
+                    ),
+                    n_therm_steps,
+                    mo.md(
+                        "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
+                    ),
+                    beta_slider,
+                    n_betas,
+                    n_steps_per_beta,
+                    mo.md(
+                        "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
+                    ),
+                    gamma_switch,
+                    mo.md(
+                        "**Delta**: a portfolio optimized with a large delta will have less cash."
+                    ),
+                    delta_switch,
+                ],
+                align="start",
+            )
+        }
+    )
+
     mo.vstack(
         [
+            mo.md("## Settings for Simulated Annealing"),
             mo.md(
                 "**Alpha**: a portfolio optimized with a large alpha will have lower volatility but also lower return."
             ),
             alpha_slider,
             n_alphas,
-            mo.md(
-                "**Thermalization steps**: random changes to the portfolio done before starting optimization."
-            ),
-            n_therm_steps,
-            mo.md(
-                "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
-            ),
-            beta_slider,
-            n_betas,
-            n_steps_per_beta,
-            mo.md(
-                "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
-            ),
-            gamma_switch,
-            mo.md(
-                "**Delta**: a portfolio optimized with a large delta will have less cash."
-            ),
-            delta_switch,
+            _adv_settings,
         ],
-        align="center",
+        align="start",
     )
     return
 
@@ -158,7 +153,7 @@ def _(delta, delta_switch, gamma, gamma_switch, mo):
         switchable_sliders.append(gamma)
     if delta_switch.value:
         switchable_sliders.append(delta)
-    mo.vstack(switchable_sliders, align="center")
+    mo.vstack(switchable_sliders, align="start")
     return (switchable_sliders,)
 
 
@@ -264,32 +259,14 @@ def _(
     n_therm_steps,
 ):
     # prepare kwarg for PortfolioOptimzer
-    PO_kwargs_download = {
-        "alpha0": alpha_slider.value[0],
-        "alpha1": alpha_slider.value[1],
-        "n_alphas": n_alphas.value,
-        "n_therm_steps": n_therm_steps.value,
-        "beta0": beta_slider.value[0],
-        "beta1": beta_slider.value[1],
-        "n_betas": n_betas.value,
-        "n_steps_per_beta": n_steps_per_beta.value,
-        "gamma_switch": gamma_switch.value,
-        "delta_switch": delta_switch.value,
-    }
-
     if gamma_switch.value:
         gamma_value = 10**gamma.value
-        PO_kwargs_download["gamma"] = gamma_value
     else:
         gamma_value = 0
-        PO_kwargs_download["gamma"] = 0
     if delta_switch.value:
         delta_value = 10**delta.value
-        PO_kwargs_download["delta"] = delta_value
     else:
         delta_value = 0
-        PO_kwargs_download["delta"] = 0
-
 
     PO_kwargs = {
         "alpha0": 10 ** alpha_slider.value[0],
@@ -303,17 +280,16 @@ def _(
         "n_betas": n_betas.value,
         "n_steps_per_beta": n_steps_per_beta.value,
     }
-    return PO_kwargs, PO_kwargs_download, delta_value, gamma_value
+    return PO_kwargs, delta_value, gamma_value
 
 
 @app.cell
-def _(PO_kwargs_download, json, mo):
-    # download kwargs for backup
-    mo.download(
-        json.dumps(PO_kwargs_download),
-        "PO_kwargs.json",
-        label="Download kwargs",
-    )
+def _():
+    return
+
+
+@app.cell
+def _():
     return
 
 
