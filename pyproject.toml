@@ -1,6 +1,6 @@
 [project]
 name = "discrete-portfolio-optimization"
-version = "0.3.3"
+version = "0.3.4"
 description =  "A Python package for discrete portfolio optimization."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -28,4 +28,5 @@ dev-dependencies = [
     "types-tqdm>=4.66.0.20240417",
     "google-generativeai>=0.8.4",
     "python-lsp-server>=1.12.2",
+    "watchdog>=6.0.0",
 ]

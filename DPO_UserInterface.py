@@ -23,23 +23,26 @@ def _():
     import numpy as np
     import plotly.express as px
 
+
     # Function to get path to temporary file
     def get_temp_file_path():
         temp_dir = tempfile.gettempdir()
         return os.path.join(temp_dir, "portfolio_optimization_results.pkl")
 
+
     # Function to save results to temporary file
     def save_results_to_temp_file(portfolios):
         temp_file_path = get_temp_file_path()
-        with open(temp_file_path, 'wb') as f:
+        with open(temp_file_path, "wb") as f:
             pickle.dump(portfolios, f)
+
 
     # Function to load results from temporary file
     def load_results_from_temp_file():
         temp_file_path = get_temp_file_path()
         if os.path.exists(temp_file_path):
             try:
-                with open(temp_file_path, 'rb') as f:
+                with open(temp_file_path, "rb") as f:
                     return pickle.load(f)
             except Exception as e:
                 print(f"Error loading saved results: {e}")
@@ -150,7 +153,7 @@ def _(json, po_kwargs_file):
     if po_kwargs_file.value:
         po_kwargs_defaults = json.loads(po_kwargs_file.value[0].contents)
     else:
-        po_kwargs_defaults = {                          
+        po_kwargs_defaults = {
             "alpha0": -2,
             "alpha1": 0.5,
             "n_alphas": 25,
@@ -332,8 +335,8 @@ def _(
         "beta1": beta_slider.value[1],
         "n_betas": n_betas.value,
         "n_steps_per_beta": n_steps_per_beta.value,
-        "gamma_switch":  gamma_switch.value,
-        "delta_switch": delta_switch.value
+        "gamma_switch": gamma_switch.value,
+        "delta_switch": delta_switch.value,
     }
 
     if gamma_switch.value:
@@ -371,7 +374,7 @@ def _(PO_kwargs_download, json, mo):
     mo.download(
         json.dumps(PO_kwargs_download),
         "PO_kwargs.json",
-        label="Download kwargs",   
+        label="Download kwargs",
     )
     return
 
@@ -402,7 +405,9 @@ def _(force_recompute, mo, run_computation_button):
 @app.cell
 def _(mo):
     run_computation_button = mo.ui.run_button(label="Run optimization!")
-    force_recompute = mo.ui.checkbox(value=False, label="Force recomputation even if previous results exist")
+    force_recompute = mo.ui.checkbox(
+        value=False, label="Force recomputation even if previous results exist"
+    )
     return force_recompute, run_computation_button
 
 
@@ -521,10 +526,12 @@ def _(
     # here the computation is actually run
     mo.stop(not run_computation_button.value)
 
+
     def plot_portfolios_closure(
         best_portfolios, pure_portfolios=pure_portfolios, returns_df=returns_df
     ):
         return plot_portfolios(best_portfolios, pure_portfolios, returns_df)
+
 
     # Check for existing saved portfolio results
     _saved_portfolios = None
@@ -534,11 +541,21 @@ def _(
     if _saved_portfolios is not None and not force_recompute.value:
         # Use existing results
         po.best_portfolios = _saved_portfolios  # Restore saved portfolios
-        mo.output.append(mo.md("*Using previously computed results. Check 'Force recomputation' to run a new optimization.*"))
-        mo.output.replace_at_index(plot_portfolios_closure(po.best_portfolios), 1)
+        mo.output.append(
+            mo.md(
+                "*Using previously computed results. Check 'Force recomputation' to run a new optimization.*"
+            )
+        )
     else:
         po.best_portfolios = []
-        mo.output.append(mo.md("*No previously computed results found or force recomputation is enabled.*"))
+        mo.output.append(
+            mo.md(
+                "*No previously computed results found or force recomputation is enabled.*"
+            )
+        )
+
+    # plot current portfolios
+    mo.output.replace_at_index(plot_portfolios_closure(po.best_portfolios), 1)
 
     # Run new optimization in any case
     opt_port_plot = po.full_run(callback=plot_portfolios_closure)
