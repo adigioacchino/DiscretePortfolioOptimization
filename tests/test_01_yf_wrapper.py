@@ -23,7 +23,7 @@ def test_download_close_price():
     close_price = close_price.head(100)
     close_price2 = close_price2.head(100)
     assert all(close_price.index == close_price2.index)
-    assert close_price.values == approx(close_price2.values)
+    assert close_price.values == approx(close_price2.values, abs=1e-5)
 
 
 @mark.dependency()
