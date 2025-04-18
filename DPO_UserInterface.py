@@ -5,74 +5,6 @@ app = marimo.App(width="columns")
 
 
 @app.cell(column=0)
-def _():
-    import marimo as mo
-
-    import json
-    import os
-    import tempfile
-    import pickle
-
-    from discrete_portfolio_optimization.yfinance_download import (
-        get_close_price_df,
-    )
-    from discrete_portfolio_optimization.portfolio import Portfolio
-    from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
-
-    import pandas as pd
-    import numpy as np
-    import plotly.express as px
-    return (
-        Portfolio,
-        PortfolioOptimizer,
-        get_close_price_df,
-        json,
-        mo,
-        np,
-        os,
-        pd,
-        pickle,
-        px,
-        tempfile,
-    )
-
-
-@app.cell
-def _(os, pickle, tempfile):
-    # define useful functions
-
-    # Function to get path to temporary file
-    def get_temp_file_path():
-        temp_dir = tempfile.gettempdir()
-        return os.path.join(temp_dir, "portfolio_optimization_results.pkl")
-
-
-    # Function to save results to temporary file
-    def save_results_to_temp_file(portfolios):
-        temp_file_path = get_temp_file_path()
-        with open(temp_file_path, "wb") as f:
-            pickle.dump(portfolios, f)
-
-
-    # Function to load results from temporary file
-    def load_results_from_temp_file():
-        temp_file_path = get_temp_file_path()
-        if os.path.exists(temp_file_path):
-            try:
-                with open(temp_file_path, "rb") as f:
-                    return pickle.load(f)
-            except Exception as e:
-                print(f"Error loading saved results: {e}")
-                return None
-        return None
-    return (
-        get_temp_file_path,
-        load_results_from_temp_file,
-        save_results_to_temp_file,
-    )
-
-
-@app.cell(column=1)
 def _(mo):
     mo.md(
         """
@@ -102,7 +34,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md("""# Computations""")
+    mo.md("""# Settings for optimization""")
     return
 
 
@@ -110,7 +42,7 @@ def _(mo):
 def _(mo, random_seed, total_value):
     mo.vstack(
         [mo.md("""## Settings for initial portfolio"""), total_value, random_seed],
-        align="center",
+        align="start",
     )
     return
 
@@ -140,39 +72,22 @@ def _(Portfolio, random_seed, ticker_prices, total_value):
 
 
 @app.cell
-def _(mo):
-    mo.md("""## Settings for Simulated Annealing""")
-    return
-
-
-@app.cell
-def _(mo):
+def _():
     # load from file the default values for sliders
-    po_kwargs_file = mo.ui.file(filetypes=[".json"], kind="area")
-    po_kwargs_file
-    return (po_kwargs_file,)
-
-
-@app.cell
-def _(json, po_kwargs_file):
-    # load from file the default values for sliders
-    if po_kwargs_file.value:
-        po_kwargs_defaults = json.loads(po_kwargs_file.value[0].contents)
-    else:
-        po_kwargs_defaults = {
-            "alpha0": -2,
-            "alpha1": 0.5,
-            "n_alphas": 25,
-            "gamma_switch": False,
-            "gamma": -1,
-            "delta_switch": False,
-            "delta": -1,
-            "n_therm_steps": 500,
-            "beta0": 1,
-            "beta1": 3,
-            "n_betas": 2500,
-            "n_steps_per_beta": 1,
-        }
+    po_kwargs_defaults = {
+        "alpha0": -2,
+        "alpha1": 0.5,
+        "n_alphas": 5,
+        "gamma_switch": False,
+        "gamma": -1,
+        "delta_switch": False,
+        "delta": -1,
+        "n_therm_steps": 500,
+        "beta0": 1,
+        "beta1": 3,
+        "n_betas": 2500,
+        "n_steps_per_beta": 1,
+    }
     return (po_kwargs_defaults,)
 
 
@@ -188,33 +103,45 @@ def _(
     n_steps_per_beta,
     n_therm_steps,
 ):
+    _adv_settings = mo.accordion(
+        {
+            "### Advanced settings:": mo.vstack(
+                [
+                    mo.md(
+                        "**Thermalization steps**: random changes to the portfolio done before starting optimization."
+                    ),
+                    n_therm_steps,
+                    mo.md(
+                        "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
+                    ),
+                    beta_slider,
+                    n_betas,
+                    n_steps_per_beta,
+                    mo.md(
+                        "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
+                    ),
+                    gamma_switch,
+                    mo.md(
+                        "**Delta**: a portfolio optimized with a large delta will have less cash."
+                    ),
+                    delta_switch,
+                ],
+                align="start",
+            )
+        }
+    )
+
     mo.vstack(
         [
+            mo.md("## Settings for Simulated Annealing"),
             mo.md(
                 "**Alpha**: a portfolio optimized with a large alpha will have lower volatility but also lower return."
             ),
             alpha_slider,
             n_alphas,
-            mo.md(
-                "**Thermalization steps**: random changes to the portfolio done before starting optimization."
-            ),
-            n_therm_steps,
-            mo.md(
-                "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
-            ),
-            beta_slider,
-            n_betas,
-            n_steps_per_beta,
-            mo.md(
-                "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
-            ),
-            gamma_switch,
-            mo.md(
-                "**Delta**: a portfolio optimized with a large delta will have less cash."
-            ),
-            delta_switch,
+            _adv_settings,
         ],
-        align="center",
+        align="start",
     )
     return
 
@@ -226,7 +153,7 @@ def _(delta, delta_switch, gamma, gamma_switch, mo):
         switchable_sliders.append(gamma)
     if delta_switch.value:
         switchable_sliders.append(delta)
-    mo.vstack(switchable_sliders, align="center")
+    mo.vstack(switchable_sliders, align="start")
     return (switchable_sliders,)
 
 
@@ -332,32 +259,14 @@ def _(
     n_therm_steps,
 ):
     # prepare kwarg for PortfolioOptimzer
-    PO_kwargs_download = {
-        "alpha0": alpha_slider.value[0],
-        "alpha1": alpha_slider.value[1],
-        "n_alphas": n_alphas.value,
-        "n_therm_steps": n_therm_steps.value,
-        "beta0": beta_slider.value[0],
-        "beta1": beta_slider.value[1],
-        "n_betas": n_betas.value,
-        "n_steps_per_beta": n_steps_per_beta.value,
-        "gamma_switch": gamma_switch.value,
-        "delta_switch": delta_switch.value,
-    }
-
     if gamma_switch.value:
         gamma_value = 10**gamma.value
-        PO_kwargs_download["gamma"] = gamma_value
     else:
         gamma_value = 0
-        PO_kwargs_download["gamma"] = 0
     if delta_switch.value:
         delta_value = 10**delta.value
-        PO_kwargs_download["delta"] = delta_value
     else:
         delta_value = 0
-        PO_kwargs_download["delta"] = 0
-
 
     PO_kwargs = {
         "alpha0": 10 ** alpha_slider.value[0],
@@ -371,28 +280,62 @@ def _(
         "n_betas": n_betas.value,
         "n_steps_per_beta": n_steps_per_beta.value,
     }
-    return PO_kwargs, PO_kwargs_download, delta_value, gamma_value
+    return PO_kwargs, delta_value, gamma_value
 
 
 @app.cell
-def _(PO_kwargs_download, json, mo):
-    # download kwargs for backup
-    mo.download(
-        json.dumps(PO_kwargs_download),
-        "PO_kwargs.json",
-        label="Download kwargs",
-    )
+def _():
     return
 
 
 @app.cell
-def _(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
-    po = PortfolioOptimizer(
-        initial_portfolio=initial_pft,
-        returns_df=returns_df,
-        **PO_kwargs,
+def _():
+    return
+
+
+@app.cell(column=1)
+def _(download_from_yf_button, get_close_price_df, mo, pd, symbols_string):
+    # fetch data from Yahoo Finance
+    mo.stop(not download_from_yf_button.value)
+    _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
+        symbols_string.value
     )
-    return (po,)
+
+    # Create a dictionary mapping tickers to status emojis
+    # Combine hit and miss tickers to get all attempted tickers
+    # Use sorted list for consistent order
+    _all_tickers = sorted(list(set(_tickers_hit) | set(_tickers_miss)))
+    _status_map = {ticker: "✅" for ticker in _tickers_hit}
+    _status_map.update({ticker: "❌" for ticker in _tickers_miss})
+
+    # Create a pandas Series based on the sorted list to maintain order
+    # Ensure pandas is imported, usually as pd
+    # Assuming pd is already imported from previous cells
+    _status_series = pd.Series(
+        {ticker: _status_map[ticker] for ticker in _all_tickers},
+        name="Historical data found in YF",
+    )
+    _status_series.index.name = "Ticker"
+
+    # Convert Series to DataFrame for display
+    _status_df = _status_series.to_frame()
+
+    # Display the table (in a notebook, the last expression is displayed)
+    mo.output.append(
+        mo.center(
+            mo.ui.table(
+                _status_df,
+                selection=None,
+                show_download=False,
+                show_column_summaries=False,
+            )
+        )
+    )
+
+    # define useful vars for computations
+    returns_df = _close_df.pct_change().dropna() * 100
+    ticker_prices = _close_df.iloc[-1].to_list()
+    return returns_df, ticker_prices
 
 
 @app.cell
@@ -418,89 +361,13 @@ def _(mo):
 
 
 @app.cell
-def _(mo, np, pd, po, px):
-    # plot best portfolios in return vs volatility space
-    def plot_portfolios(best_portfolios, pure_portfolios, returns_df):
-        # portfolios just computed
-        _metrics = [
-            pft.portfolio_metrics(returns_df) for pft in po.best_portfolios
-        ]
-        _alphas = [pft.alpha for pft in po.best_portfolios]
-        _returns = [m["Return"] for m in _metrics]
-        _volatilities = [m["Volatility"] for m in _metrics]
-        _indices = [i for i in range(len(_metrics))]
-
-        _pure = ["Optimized" for _ in range(len(_metrics))]
-        _metrics = [pft.portfolio_metrics(returns_df) for pft in pure_portfolios]
-        _returns = _returns + [m["Return"] for m in _metrics]
-        _volatilities = _volatilities + [m["Volatility"] for m in _metrics]
-        _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
-        _pure = _pure + ["Pure" for _ in range(len(_metrics))]
-
-        # Create optimized df
-        optimized_df = pd.DataFrame(
-            {
-                "Return": _returns[: len(_alphas)],
-                "Volatility": _volatilities[: len(_alphas)],
-                "Index": _indices[: len(_alphas)],
-                "Type": _pure[: len(_alphas)],
-                "LogAlpha": np.log10(
-                    [max(a, 1e-10) for a in _alphas]
-                ),  # Use a minimum value to avoid log(0)
-            }
-        )
-
-        # Create pure portfolios df
-        pure_df = pd.DataFrame(
-            {
-                "Return": _returns[len(_alphas) :],
-                "Volatility": _volatilities[len(_alphas) :],
-                "Index": _indices[len(_alphas) :],
-                "Type": _pure[len(_alphas) :],
-            }
-        )
-
-        # Create figure with optimized portfolios using blue colorscale on log scale
-        _plot = px.scatter(
-            optimized_df,
-            x="Volatility",
-            y="Return",
-            color="LogAlpha",  # Use log scale for coloring
-            color_continuous_scale="Blues",
-            hover_data={
-                "Type": True,
-                "Volatility": ":.2f",
-                "Return": ":.2f",
-                "LogAlpha": ":.2f",  # Hide LogAlpha in hover
-                "Index": True,
-            },
-        )
-
-        # Add pure portfolios as orange markers
-        pure_trace = px.scatter(
-            pure_df,
-            x="Volatility",
-            y="Return",
-            hover_data={
-                "Type": True,
-                "Volatility": ":.2f",
-                "Return": ":.2f",
-                "Index": True,
-            },
-        ).data[0]
-
-        pure_trace.marker.color = "orange"
-        pure_trace.marker.symbol = "x"
-        _plot.add_trace(pure_trace)
-
-        _plot.update_traces(
-            marker_size=10,
-            marker_line_width=2,
-        )
-
-        mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
-        return mo.ui.plotly(_plot)
-    return (plot_portfolios,)
+def _(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
+    po = PortfolioOptimizer(
+        initial_portfolio=initial_pft,
+        returns_df=returns_df,
+        **PO_kwargs,
+    )
+    return (po,)
 
 
 @app.cell
@@ -613,54 +480,158 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df):
     return i, selected_idxs, selected_portfolios, sp_df, symbol
 
 
-@app.cell
-def _():
-    return
-
-
 @app.cell(column=2)
-def _(download_from_yf_button, get_close_price_df, mo, pd, symbols_string):
-    # fetch data from Yahoo Finance
-    mo.stop(not download_from_yf_button.value)
-    _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
-        symbols_string.value
+def _():
+    import marimo as mo
+
+    import json
+    import os
+    import tempfile
+    import pickle
+
+    from discrete_portfolio_optimization.yfinance_download import (
+        get_close_price_df,
+    )
+    from discrete_portfolio_optimization.portfolio import Portfolio
+    from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
+
+    import pandas as pd
+    import numpy as np
+    import plotly.express as px
+    return (
+        Portfolio,
+        PortfolioOptimizer,
+        get_close_price_df,
+        json,
+        mo,
+        np,
+        os,
+        pd,
+        pickle,
+        px,
+        tempfile,
     )
 
-    # Create a dictionary mapping tickers to status emojis
-    # Combine hit and miss tickers to get all attempted tickers
-    # Use sorted list for consistent order
-    _all_tickers = sorted(list(set(_tickers_hit) | set(_tickers_miss)))
-    _status_map = {ticker: "✅" for ticker in _tickers_hit}
-    _status_map.update({ticker: "❌" for ticker in _tickers_miss})
 
-    # Create a pandas Series based on the sorted list to maintain order
-    # Ensure pandas is imported, usually as pd
-    # Assuming pd is already imported from previous cells
-    _status_series = pd.Series(
-        {ticker: _status_map[ticker] for ticker in _all_tickers},
-        name="Historical data found in YF",
+@app.cell
+def _(os, pickle, tempfile):
+    # define useful functions
+
+    # Function to get path to temporary file
+    def get_temp_file_path():
+        temp_dir = tempfile.gettempdir()
+        return os.path.join(temp_dir, "portfolio_optimization_results.pkl")
+
+
+    # Function to save results to temporary file
+    def save_results_to_temp_file(portfolios):
+        temp_file_path = get_temp_file_path()
+        with open(temp_file_path, "wb") as f:
+            pickle.dump(portfolios, f)
+
+
+    # Function to load results from temporary file
+    def load_results_from_temp_file():
+        temp_file_path = get_temp_file_path()
+        if os.path.exists(temp_file_path):
+            try:
+                with open(temp_file_path, "rb") as f:
+                    return pickle.load(f)
+            except Exception as e:
+                print(f"Error loading saved results: {e}")
+                return None
+        return None
+    return (
+        get_temp_file_path,
+        load_results_from_temp_file,
+        save_results_to_temp_file,
     )
-    _status_series.index.name = "Ticker"
 
-    # Convert Series to DataFrame for display
-    _status_df = _status_series.to_frame()
 
-    # Display the table (in a notebook, the last expression is displayed)
-    mo.output.append(
-        mo.center(
-            mo.ui.table(
-                _status_df,
-                selection=None,
-                show_download=False,
-                show_column_summaries=False,
-            )
+@app.cell
+def _(mo, np, pd, po, px):
+    # plot best portfolios in return vs volatility space
+    def plot_portfolios(best_portfolios, pure_portfolios, returns_df):
+        # portfolios just computed
+        _metrics = [
+            pft.portfolio_metrics(returns_df) for pft in po.best_portfolios
+        ]
+        _alphas = [pft.alpha for pft in po.best_portfolios]
+        _returns = [m["Return"] for m in _metrics]
+        _volatilities = [m["Volatility"] for m in _metrics]
+        _indices = [i for i in range(len(_metrics))]
+
+        _pure = ["Optimized" for _ in range(len(_metrics))]
+        _metrics = [pft.portfolio_metrics(returns_df) for pft in pure_portfolios]
+        _returns = _returns + [m["Return"] for m in _metrics]
+        _volatilities = _volatilities + [m["Volatility"] for m in _metrics]
+        _indices = _indices + [len(_indices) + i for i in range(len(_metrics))]
+        _pure = _pure + ["Pure" for _ in range(len(_metrics))]
+
+        # Create optimized df
+        optimized_df = pd.DataFrame(
+            {
+                "Return": _returns[: len(_alphas)],
+                "Volatility": _volatilities[: len(_alphas)],
+                "Index": _indices[: len(_alphas)],
+                "Type": _pure[: len(_alphas)],
+                "LogAlpha": np.log10(
+                    [max(a, 1e-10) for a in _alphas]
+                ),  # Use a minimum value to avoid log(0)
+            }
         )
-    )
 
-    # define useful vars for computations
-    returns_df = _close_df.pct_change().dropna() * 100
-    ticker_prices = _close_df.iloc[-1].to_list()
-    return returns_df, ticker_prices
+        # Create pure portfolios df
+        pure_df = pd.DataFrame(
+            {
+                "Return": _returns[len(_alphas) :],
+                "Volatility": _volatilities[len(_alphas) :],
+                "Index": _indices[len(_alphas) :],
+                "Type": _pure[len(_alphas) :],
+            }
+        )
+
+        # Create figure with optimized portfolios using blue colorscale on log scale
+        _plot = px.scatter(
+            optimized_df,
+            x="Volatility",
+            y="Return",
+            color="LogAlpha",  # Use log scale for coloring
+            color_continuous_scale="Blues",
+            hover_data={
+                "Type": True,
+                "Volatility": ":.2f",
+                "Return": ":.2f",
+                "LogAlpha": ":.2f",  # Hide LogAlpha in hover
+                "Index": True,
+            },
+        )
+
+        # Add pure portfolios as orange markers
+        pure_trace = px.scatter(
+            pure_df,
+            x="Volatility",
+            y="Return",
+            hover_data={
+                "Type": True,
+                "Volatility": ":.2f",
+                "Return": ":.2f",
+                "Index": True,
+            },
+        ).data[0]
+
+        pure_trace.marker.color = "orange"
+        pure_trace.marker.symbol = "x"
+        _plot.add_trace(pure_trace)
+
+        _plot.update_traces(
+            marker_size=10,
+            marker_line_width=2,
+        )
+
+        mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
+        return mo.ui.plotly(_plot)
+    return (plot_portfolios,)
 
 
 if __name__ == "__main__":
