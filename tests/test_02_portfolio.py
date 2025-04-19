@@ -8,16 +8,15 @@ import pandas as pd
 
 @pytest.fixture
 def close_df():
-    return pd.read_csv('tests/data/20240825_close.csv', index_col=0)
+    return pd.read_csv("tests/data/20240825_close.csv", index_col=0)
+
 
 @mark.dependency(
-    depends=['tests/test_01_yf_wrapper.py::test_get_close_price_df'],
-    scope='session'
+    depends=["tests/test_01_yf_wrapper.py::test_get_close_price_df"], scope="session"
 )
 def test_init_portfolio(close_df):
     # init with tot value
-    pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000,
-                    seed=42)
+    pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000, seed=42)
 
     assert pft.tot_value == 10_000
     assert pft.num_assets == 5
@@ -30,18 +29,16 @@ def test_init_portfolio(close_df):
     assert sum(pft.allocations) > 0
 
     # init with allocations
-    pft = Portfolio(close_df.iloc[-1].to_list(),
-                    allocations=[1, 2, 3, 4, 5])
+    pft = Portfolio(close_df.iloc[-1].to_list(), allocations=[1, 2, 3, 4, 5])
     assert pft.tot_value == (close_df.iloc[-1] @ [1, 2, 3, 4, 5])
 
+
 @mark.dependency(
-    depends=['tests/test_01_yf_wrapper.py::test_get_close_price_df'],
-    scope='session'
+    depends=["tests/test_01_yf_wrapper.py::test_get_close_price_df"], scope="session"
 )
 def test_random_move(close_df):
     for seed in range(10):
-        pft = Portfolio(close_df.iloc[-1].to_list(), 
-                        tot_value=10_000, seed=seed)
+        pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000, seed=seed)
 
         old_allocations = pft.allocations.copy()
         old_asset_value = pft.asset_value
@@ -69,37 +66,33 @@ def test_random_move(close_df):
 
 
 @mark.dependency(
-    depends=['tests/test_01_yf_wrapper.py::test_get_close_price_df'],
-    scope='session'
+    depends=["tests/test_01_yf_wrapper.py::test_get_close_price_df"], scope="session"
 )
 def test_computations(close_df):
-    pft = Portfolio(close_df.iloc[-1].to_list(),
-                    tot_value=10_000, seed=42)
-    
+    pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000, seed=42)
+
     returns = close_df.pct_change().dropna()
     metrics = pft.portfolio_metrics(returns)
 
-    assert 'Return' in metrics
-    assert 'Volatility' in metrics
-    assert 'Sharpe Ratio' in metrics
+    assert "Return" in metrics
+    assert "Volatility" in metrics
+    assert "Sharpe Ratio" in metrics
 
-    assert isinstance(metrics['Return'], float)
-    assert metrics['Return'] > -0.1
-    assert metrics['Return'] < 0.1
-    assert isinstance(metrics['Volatility'], float)
-    assert metrics['Volatility'] > -0.1
-    assert metrics['Volatility'] < 0.1
-    assert isinstance(metrics['Sharpe Ratio'], float)
+    assert isinstance(metrics["Return"], float)
+    assert metrics["Return"] > -0.1
+    assert metrics["Return"] < 0.1
+    assert isinstance(metrics["Volatility"], float)
+    assert metrics["Volatility"] > -0.1
+    assert metrics["Volatility"] < 0.1
+    assert isinstance(metrics["Sharpe Ratio"], float)
 
 
 @mark.dependency(
-    depends=['tests/test_01_yf_wrapper.py::test_get_close_price_df'],
-    scope='session'
+    depends=["tests/test_01_yf_wrapper.py::test_get_close_price_df"], scope="session"
 )
 def test_copy(close_df):
-    pft = Portfolio(close_df.iloc[-1].to_list(),
-                    tot_value=10_000, seed=42)
-    
+    pft = Portfolio(close_df.iloc[-1].to_list(), tot_value=10_000, seed=42)
+
     pft_copy = pft.copy()
 
     assert pft.tot_value == pft_copy.tot_value
