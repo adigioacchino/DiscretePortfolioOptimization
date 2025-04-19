@@ -1,6 +1,8 @@
+
+
 import marimo
 
-__generated_with = "0.12.10"
+__generated_with = "0.13.0"
 app = marimo.App(width="columns")
 
 
@@ -154,7 +156,7 @@ def _(delta, delta_switch, gamma, gamma_switch, mo):
     if delta_switch.value:
         switchable_sliders.append(delta)
     mo.vstack(switchable_sliders, align="start")
-    return (switchable_sliders,)
+    return
 
 
 @app.cell
@@ -280,7 +282,7 @@ def _(
         "n_betas": n_betas.value,
         "n_steps_per_beta": n_steps_per_beta.value,
     }
-    return PO_kwargs, delta_value, gamma_value
+    return (PO_kwargs,)
 
 
 @app.cell
@@ -436,7 +438,7 @@ def _(
     save_results_to_temp_file(po.best_portfolios)
 
     opt_port_plot
-    return opt_port_plot, plot_portfolios_closure
+    return (opt_port_plot,)
 
 
 @app.cell
@@ -477,23 +479,22 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df):
         _out = mo.md("Select portfolios to see details.")
 
     _out
-    return i, selected_idxs, selected_portfolios, sp_df, symbol
+    return
 
 
 @app.cell(column=2)
 def _():
     import marimo as mo
 
-    import json
     import os
     import tempfile
     import pickle
 
-    from discrete_portfolio_optimization.yfinance_download import (
+    from discrete_portfolio_optimization import (
+        Portfolio,
+        PortfolioOptimizer,
         get_close_price_df,
     )
-    from discrete_portfolio_optimization.portfolio import Portfolio
-    from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
 
     import pandas as pd
     import numpy as np
@@ -502,7 +503,6 @@ def _():
         Portfolio,
         PortfolioOptimizer,
         get_close_price_df,
-        json,
         mo,
         np,
         os,
@@ -541,11 +541,7 @@ def _(os, pickle, tempfile):
                 print(f"Error loading saved results: {e}")
                 return None
         return None
-    return (
-        get_temp_file_path,
-        load_results_from_temp_file,
-        save_results_to_temp_file,
-    )
+    return load_results_from_temp_file, save_results_to_temp_file
 
 
 @app.cell

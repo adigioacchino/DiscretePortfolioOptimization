@@ -1,7 +1,7 @@
 ![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/adigioacchino/a72d32f9e10c404f7738822dac068274/raw/covbadge.json)
 
 # Running the UI
-This project consists of a python package `discrete_portfolio_optimization` and a simple UI written in [`marimo`](https://marimo.io/).
+This project consists of a python package `DiscretePortfolioOptimization` and a simple UI written in [`marimo`](https://marimo.io/).
 
 To run the UI, you need to install the package and its dependencies. The suggested way to do this is to use [`uv`](https://github.com/astral-sh/uv?tab=readme-ov-file).
 
@@ -20,7 +20,7 @@ uv python install 3.13
 
 Finally, use `uv` to run the UI (it will install the package and its dependencies):
 ```bash
-uv run marimo run DPO_UserInterface.py
+uv run marimo run UI/DPO_UserInterface.py
 ```
 ## Windows
 The only difference is the command to install `uv`:
