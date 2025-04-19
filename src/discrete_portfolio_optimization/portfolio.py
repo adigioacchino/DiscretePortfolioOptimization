@@ -1,4 +1,7 @@
+from typing import List, Dict, Optional, Union
+
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 
 
@@ -16,11 +19,11 @@ class Portfolio:
 
     def __init__(
         self,
-        current_prices: list[float],
-        tot_value: float | None = None,
-        allocations: list[float] | None = None,
+        current_prices: Union[List[float], NDArray[np.floating]],
+        tot_value: Optional[float] = None,
+        allocations: Optional[Union[List[float], NDArray[np.floating]]] = None,
         cash_value: float = 0,
-        seed: int | None = None,
+        seed: Optional[int] = None,
     ):
         """
         Initialize the Portfolio object using either the total value of the portfolio
@@ -33,9 +36,13 @@ class Portfolio:
             cash_value: float, the cash value of the portfolio
             seed: int, the seed for the random number generator
         """
-        self.current_prices = np.array(current_prices)
+        self.current_prices = np.array(current_prices, dtype=float)
         self.num_assets = len(current_prices)
-        self.alpha = None  # alpha is not used in this class, but it is used in the optimization class
+        self.alpha: Optional[float] = None  # alpha is not used in this class, but it is used in the optimization class
+        self.weights: np.ndarray
+        self.asset_value: float
+        self.tot_value: float
+        self.cash_value: float
 
         if seed is not None:
             self.rng = np.random.default_rng(seed)
@@ -51,23 +58,24 @@ class Portfolio:
             raise RuntimeError(
                 "Cannot create a portfolio without `allocations` or (`tot_value`)."
             )
-        elif allocations is None:
+        elif allocations is None and tot_value is not None:
             self.tot_value = tot_value
             self.allocations = self._random_allocations()
-        elif tot_value is None:
-            self.allocations = np.array(allocations)
-            self.tot_value = self.current_prices @ self.allocations + cash_value
+        elif tot_value is None and allocations is not None:
+            self.allocations = np.array(allocations, dtype=float)
+            self.tot_value = self.current_prices @ self.allocations + cash_value            
+
         self._sync_values()  # self.asset_value, self.cash_value
         self._sync_weights()  # self.weights
 
-    def _sync_values(self):
+    def _sync_values(self) -> None:
         """
         Synchronize the asset and cash values with the current prices and allocations.
         """
         self.asset_value = self.current_prices @ self.allocations
         self.cash_value = self.tot_value - self.asset_value
 
-    def _sync_weights(self):
+    def _sync_weights(self) -> None:
         """
         Synchronize the weights with the current prices and allocations.
         """
@@ -78,7 +86,7 @@ class Portfolio:
             ]
         )
 
-    def _random_allocations(self):
+    def _random_allocations(self) -> NDArray[np.floating]:
         """
         Generate random allocations for the assets.
         """
@@ -93,9 +101,9 @@ class Portfolio:
                 allocations[t_pos] += 1
             else:
                 available_poss = available_poss[available_poss != t_pos]
-        return np.array(allocations)
+        return np.array(allocations, dtype=float)
 
-    def random_move(self):
+    def random_move(self) -> None:
         """
         Perform a random move in the portfolio changing the allocations of two assets.
         The two assets are chosen randomly and the move is the smallest possible in terms of value.
@@ -219,7 +227,7 @@ class Portfolio:
 
     def portfolio_metrics(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
-    ) -> dict:
+    ) -> Dict[str, float]:
         """
         Compute the return, volatility, and Sharpe ratio of the portfolio.
         If `account_for_cash` is True, the metrics are computed using the fraction of the total value
@@ -240,22 +248,27 @@ class Portfolio:
             "Sharpe Ratio": ret / vol,
         }
 
-    def copy(self):
+    def copy(self) -> 'Portfolio':
         """
         Return a copy of the Portfolio object.
         """
+        # Convert numpy arrays to lists and explicitly cast them for type safety
+        #current_prices_list: List[float] = [float(x) for x in self.current_prices]
+        #allocations_list: List[float] = [float(x) for x in self.allocations]
+        
         return Portfolio(
             self.current_prices,
-            cash_value=self.cash_value,
-            allocations=self.allocations.copy(),
+            None,
+            self.allocations,
+            self.cash_value,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
-            f"Portfolio with total value of {round(self.tot_value, ndigits=1)}"
+            f"Portfolio with total value of {round(float(self.tot_value), ndigits=1)}"
             f" (of which {round(self.asset_value, ndigits=1)} in assets and {round(self.cash_value, ndigits=1)} cash)"
             f" and allocations {self.allocations}."
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()

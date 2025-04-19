@@ -1,10 +1,12 @@
 from discrete_portfolio_optimization.portfolio import Portfolio
 
+from warnings import warn
+from typing import List, Optional, Any, Callable
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import marimo as mo  # to have marimo-compatible progress bars
-from warnings import warn
 
 
 class PortfolioOptimizer:
@@ -72,7 +74,9 @@ class PortfolioOptimizer:
         """
         self.initial_portfolio = initial_portfolio.copy()
         self.rng = initial_portfolio.rng  # share seed with portfolio if was provided
-        self.best_portfolios: list[Portfolio] = []
+        self.best_portfolios: List[Portfolio] = []
+        self._current_portfolio: Portfolio
+        self._current_score: float
         self.gamma = gamma
         self.delta = delta
         # check that returns df is in *daily percentage* format
@@ -172,7 +176,7 @@ class PortfolioOptimizer:
         schedule2 = np.exp(schedule2)
         return np.concatenate([schedule1, schedule2])
 
-    def _step(self, alpha, beta):
+    def _step(self, alpha: float, beta: float) -> None:
         """
         Perform a step of the Metropolis algorithm.
         It results in potentially updating the `self._current_portfolio`
@@ -196,7 +200,7 @@ class PortfolioOptimizer:
             self._current_score = new_score
         return
 
-    def run_fixed_alpha(self, alpha):
+    def run_fixed_alpha(self, alpha: float) -> None:
         """
         Run the optimization process for a fixed alpha.
         It will store the best portfolio found in `self.best_portfolios`.
@@ -212,6 +216,8 @@ class PortfolioOptimizer:
         best_score = self._current_score
 
         # progress bar
+        # Use Any type for beta_schedule_iter to accommodate both tqdm and marimo progress bar
+        beta_schedule_iter: Any
         if mo.running_in_notebook():
             beta_schedule_iter = mo.status.progress_bar(
                 self.beta_schedule,
@@ -235,11 +241,19 @@ class PortfolioOptimizer:
         self.best_portfolios.append(best_portfolio)
         return
 
-    def full_run(self, callback=None):
+    def full_run(self, callback: Optional[Callable[['PortfolioOptimizer'], Any]] = None) -> Any:
         """
         Run the full optimization process.
+        
+        Args:
+            callback: Optional function to call after each alpha optimization
+
+        Returns:
+            The result of the callback if provided, otherwise None
         """
         # progress bar
+        # Use Any type for alpha_schedule_iter to accommodate both tqdm and marimo progress bar
+        alpha_schedule_iter: Any
         if mo.running_in_notebook():
             alpha_schedule_iter = mo.status.progress_bar(
                 self.alpha_schedule, title="Collecting optimal portfolios"
@@ -249,9 +263,10 @@ class PortfolioOptimizer:
                 self.alpha_schedule, desc="Collecting optimal portfolios"
             )
 
+        callback_res: Any = None
         for alpha in alpha_schedule_iter:
             self.run_fixed_alpha(alpha)
             if callback is not None:
                 callback_res = callback(self)
 
-        return callback_res if callback is not None else None
+        return callback_res
