@@ -1,4 +1,4 @@
-name: Test package
+name: Check pre-commits, then test package
 
 
 on:
@@ -6,6 +6,26 @@ on:
 
 
 jobs:
+  # This job runs pre-commit hooks on all files in the repository
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files
+
+  # This job runs the tests and generates a coverage report
   test:
     runs-on: ubuntu-latest
 
@@ -16,7 +36,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.13
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
