@@ -241,10 +241,12 @@ class PortfolioOptimizer:
         self.best_portfolios.append(best_portfolio)
         return
 
-    def full_run(self, callback: Optional[Callable[['PortfolioOptimizer'], Any]] = None) -> Any:
+    def full_run(
+        self, callback: Optional[Callable[["PortfolioOptimizer"], Any]] = None
+    ) -> Any:
         """
         Run the full optimization process.
-        
+
         Args:
             callback: Optional function to call after each alpha optimization
 

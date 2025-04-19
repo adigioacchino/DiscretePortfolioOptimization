@@ -38,7 +38,9 @@ class Portfolio:
         """
         self.current_prices = np.array(current_prices, dtype=float)
         self.num_assets = len(current_prices)
-        self.alpha: Optional[float] = None  # alpha is not used in this class, but it is used in the optimization class
+        self.alpha: Optional[float] = (
+            None  # alpha is not used in this class, but it is used in the optimization class
+        )
         self.weights: np.ndarray
         self.asset_value: float
         self.tot_value: float
@@ -63,7 +65,7 @@ class Portfolio:
             self.allocations = self._random_allocations()
         elif tot_value is None and allocations is not None:
             self.allocations = np.array(allocations, dtype=float)
-            self.tot_value = self.current_prices @ self.allocations + cash_value            
+            self.tot_value = self.current_prices @ self.allocations + cash_value
 
         self._sync_values()  # self.asset_value, self.cash_value
         self._sync_weights()  # self.weights
@@ -248,14 +250,14 @@ class Portfolio:
             "Sharpe Ratio": ret / vol,
         }
 
-    def copy(self) -> 'Portfolio':
+    def copy(self) -> "Portfolio":
         """
         Return a copy of the Portfolio object.
         """
         # Convert numpy arrays to lists and explicitly cast them for type safety
-        #current_prices_list: List[float] = [float(x) for x in self.current_prices]
-        #allocations_list: List[float] = [float(x) for x in self.allocations]
-        
+        # current_prices_list: List[float] = [float(x) for x in self.current_prices]
+        # allocations_list: List[float] = [float(x) for x in self.allocations]
+
         return Portfolio(
             self.current_prices,
             None,
