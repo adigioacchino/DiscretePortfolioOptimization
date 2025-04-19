@@ -490,7 +490,7 @@ def _():
     import tempfile
     import pickle
 
-    from discrete_portfolio_optimization import (
+    from DiscretePortfolioOptimization import (
         Portfolio,
         PortfolioOptimizer,
         get_close_price_df,

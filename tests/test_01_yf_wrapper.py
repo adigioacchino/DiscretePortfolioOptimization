@@ -1,4 +1,4 @@
-from discrete_portfolio_optimization.yfinance_download import (
+from DiscretePortfolioOptimization.yfinance_download import (
     download_close_price,
     get_close_price_df,
 )

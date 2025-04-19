@@ -1,5 +1,5 @@
-from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
-from discrete_portfolio_optimization.portfolio import Portfolio
+from DiscretePortfolioOptimization.metropolis import PortfolioOptimizer
+from DiscretePortfolioOptimization.portfolio import Portfolio
 
 from pytest import mark
 from pytest import approx

@@ -1,4 +1,4 @@
-from discrete_portfolio_optimization.portfolio import Portfolio
+from DiscretePortfolioOptimization.portfolio import Portfolio
 
 from warnings import warn
 from typing import List, Optional, Any, Callable

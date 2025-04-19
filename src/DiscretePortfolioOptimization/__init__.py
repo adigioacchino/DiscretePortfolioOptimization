@@ -10,13 +10,13 @@ Key components:
 """
 
 # Import main classes and functions for easy access
-from discrete_portfolio_optimization.portfolio import Portfolio
-from discrete_portfolio_optimization.metropolis import PortfolioOptimizer
-from discrete_portfolio_optimization.yfinance_download import (
+from DiscretePortfolioOptimization.portfolio import Portfolio
+from DiscretePortfolioOptimization.metropolis import PortfolioOptimizer
+from DiscretePortfolioOptimization.yfinance_download import (
     get_close_price_df,
 )
 
-# Define __all__ to explicitly specify what gets imported with "from discrete_portfolio_optimization import *"
+# Define __all__ to explicitly specify what gets imported with "from DiscretePortfolioOptimization import *"
 __all__ = [
     "Portfolio",
     "PortfolioOptimizer",

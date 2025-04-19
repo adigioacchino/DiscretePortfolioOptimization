@@ -1,5 +1,5 @@
 [project]
-name = "discrete-portfolio-optimization"
+name = "DiscretePortfolioOptimization"
 version = "0.5.0"
 description =  "A Python package for discrete portfolio optimization."
 readme = "README.md"

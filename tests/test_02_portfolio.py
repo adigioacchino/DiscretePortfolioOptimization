@@ -1,4 +1,4 @@
-from discrete_portfolio_optimization.portfolio import Portfolio
+from DiscretePortfolioOptimization.portfolio import Portfolio
 
 from pytest import mark
 from pytest import approx
