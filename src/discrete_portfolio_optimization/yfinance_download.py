@@ -1,6 +1,7 @@
+from typing import List, Tuple, Any
+
 import yfinance as yf  # type: ignore
 import pandas as pd
-
 from tqdm import tqdm
 import marimo as mo  # to have marimo-compatible progress bars
 
@@ -21,7 +22,7 @@ def download_close_price(ticker: str) -> pd.Series:
     return data["Close"][ticker]
 
 
-def get_close_price_df(tickers: str) -> tuple[pd.DataFrame, list, list]:
+def get_close_price_df(tickers: str) -> Tuple[pd.DataFrame, List[str], List[str]]:
     """
     Download the close price of a list of stocks from Yahoo Finance.
 
@@ -37,6 +38,8 @@ def get_close_price_df(tickers: str) -> tuple[pd.DataFrame, list, list]:
     symbols = [x.strip() for x in tickers.split(",")]
 
     # define progress bar
+    # Use Any for progress bar to accommodate both tqdm and marimo progress bar
+    symbols_iter: Any
     if mo.running_in_notebook():
         symbols_iter = mo.status.progress_bar(
             symbols, title="Downloading Yahoo finance data"
@@ -44,8 +47,8 @@ def get_close_price_df(tickers: str) -> tuple[pd.DataFrame, list, list]:
     else:
         symbols_iter = tqdm(symbols, desc="Downloading Yahoo finance data")
 
-    ticker_hits = []
-    ticker_misses = []
+    ticker_hits: List[str] = []
+    ticker_misses: List[str] = []
     for ticker in symbols_iter:
         try:
             t_data = download_close_price(ticker)

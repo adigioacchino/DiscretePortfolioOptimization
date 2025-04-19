@@ -29,4 +29,5 @@ dev-dependencies = [
     "google-generativeai>=0.8.4",
     "python-lsp-server>=1.12.2",
     "watchdog>=6.0.0",
+    "pre-commit>=4.2.0",
 ]
