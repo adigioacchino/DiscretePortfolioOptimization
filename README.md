@@ -30,7 +30,21 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 Then you can follow the same steps as above to install python and run the UI.
 
 # Contribute
-Locally you can test your changes with
+## Prepare the local environment
+First, install `uv` using the command above. Then, create a new virtual environment using `uv`:
+```bash
+uv sync
 ```
+(this step is not strictly necessary, it will be done automatically at the first `uv run` command)
+
+## Pre-commit
+To install pre-commit hooks, run the following command:
+```bash
+uv run pre-commit install
+```
+
+## Testing
+To run the tests, use the following command:
+```bash
 uv run pytest --cov=src
 ```
