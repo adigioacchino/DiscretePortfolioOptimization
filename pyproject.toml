@@ -11,6 +11,7 @@ dependencies = [
     "tqdm>=4.66.5",
     "plotly>=5.23.0",
     "marimo>=0.11",
+    "plotly-stubs>=0.0.5",
 ]
 
 [build-system]

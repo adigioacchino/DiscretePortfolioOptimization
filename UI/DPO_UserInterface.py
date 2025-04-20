@@ -20,7 +20,7 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def yf_download_input(mo):
     symbols_string = mo.ui.text_area(
         value="META, AMZN, AAPL, NFLX, GOOGL",
     )
@@ -296,9 +296,15 @@ def _():
 
 
 @app.cell(column=1)
-def _(download_from_yf_button, get_close_price_df, mo, pd, symbols_string):
+def yf_ui_fetch(
+    download_from_yf_button,
+    get_close_price_df,
+    mo,
+    pd,
+    symbols_string,
+):
     # fetch data from Yahoo Finance
-    mo.stop(not download_from_yf_button.value)
+    mo.stop(not (download_from_yf_button.value or not mo.running_in_notebook()))
     _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
         symbols_string.value
     )
@@ -363,7 +369,7 @@ def _(mo):
 
 
 @app.cell
-def _(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
+def init_po(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
     po = PortfolioOptimizer(
         initial_portfolio=initial_pft,
         returns_df=returns_df,
@@ -387,7 +393,7 @@ def _(Portfolio, np, returns_df, ticker_prices):
 
 
 @app.cell
-def _(
+def run_portfolio_opt(
     force_recompute,
     load_results_from_temp_file,
     mo,
@@ -399,7 +405,7 @@ def _(
     save_results_to_temp_file,
 ):
     # here the computation is actually run
-    mo.stop(not run_computation_button.value)
+    mo.stop(not (run_computation_button.value or not mo.running_in_notebook()))
 
 
     def plot_portfolios_closure(
