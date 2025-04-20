@@ -349,7 +349,7 @@ def yf_ui_fetch(
 @app.cell
 def _(force_recompute, mo, run_computation_button):
     mo.md(f"""
-    ## Run computation
+    # Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
@@ -393,10 +393,21 @@ def _(Portfolio, np, returns_df, ticker_prices):
 
 
 @app.cell
+def _(mo):
+    # add a number input to select the number of top assets to show
+    num_assets_plot = mo.ui.number(
+        start=1, stop=10, label="Number of top assets to show in plot: ", value=5
+    )
+    num_assets_plot
+    return (num_assets_plot,)
+
+
+@app.cell
 def run_portfolio_opt(
     force_recompute,
     load_results_from_temp_file,
     mo,
+    num_assets_plot,
     plot_portfolios,
     po,
     pure_portfolios,
@@ -409,9 +420,12 @@ def run_portfolio_opt(
 
 
     def plot_portfolios_closure(
-        po, pure_portfolios=pure_portfolios, returns_df=returns_df
+        po,
+        pure_portfolios=pure_portfolios,
+        returns_df=returns_df,
+        k=num_assets_plot.value,
     ):
-        return plot_portfolios(po, pure_portfolios, returns_df)
+        return plot_portfolios(po, pure_portfolios, returns_df, k)
 
 
     # Check for existing saved portfolio results
