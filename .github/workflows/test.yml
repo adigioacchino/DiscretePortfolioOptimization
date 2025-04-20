@@ -42,7 +42,7 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies and run tests
-        run: uv run pytest --cov=src --cov-report=json
+        run: uv run pytest --cov=src --cov=UI --cov-report=json
 
       - name: Get coverage percentage
         run: |

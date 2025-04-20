@@ -1,4 +1,8 @@
-from UI.DPO_UserInterface import (
+import sys
+
+sys.path.append("UI")  # add the UI directory (not part of the package) to the path
+
+from DPO_UserInterface import (
     yf_download_input,
     yf_ui_fetch,
     init_po,
