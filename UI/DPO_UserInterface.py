@@ -5,9 +5,23 @@ import marimo
 __generated_with = "0.13.0"
 app = marimo.App(width="columns")
 
+with app.setup:
+    # Define a unique session ID - a random UUID
+    import marimo as mo
 
-@app.cell(column=0)
-def _(mo):
+    import os
+    import tempfile
+    import pickle
+
+    import pandas as pd
+    import numpy as np
+    import plotly.express as px
+
+    session_id = os.urandom(16).hex()
+
+
+@app.cell
+def _():
     mo.md(
         """
         # Fetch data from Yahoo Finance
@@ -20,7 +34,7 @@ def _(mo):
 
 
 @app.cell
-def yf_download_input(mo):
+def yf_download_input():
     symbols_string = mo.ui.text_area(
         value="META, AMZN, AAPL, NFLX, GOOGL",
     )
@@ -35,13 +49,13 @@ def yf_download_input(mo):
 
 
 @app.cell
-def _(mo):
+def _():
     mo.md("""# Settings for optimization""")
     return
 
 
 @app.cell
-def _(mo, random_seed, total_value):
+def _(random_seed, total_value):
     mo.vstack(
         [mo.md("""## Settings for initial portfolio"""), total_value, random_seed],
         align="start",
@@ -50,7 +64,7 @@ def _(mo, random_seed, total_value):
 
 
 @app.cell
-def _(mo):
+def _():
     # UI elements - initial portfolio
     total_value = mo.ui.number(
         start=100,
@@ -99,7 +113,6 @@ def _(
     beta_slider,
     delta_switch,
     gamma_switch,
-    mo,
     n_alphas,
     n_betas,
     n_steps_per_beta,
@@ -149,7 +162,7 @@ def _(
 
 
 @app.cell
-def _(delta, delta_switch, gamma, gamma_switch, mo):
+def _(delta, delta_switch, gamma, gamma_switch):
     switchable_sliders = []
     if gamma_switch.value:
         switchable_sliders.append(gamma)
@@ -160,7 +173,7 @@ def _(delta, delta_switch, gamma, gamma_switch, mo):
 
 
 @app.cell
-def _(mo, po_kwargs_defaults):
+def _(po_kwargs_defaults):
     # UI elements - simulated annealing
     alpha_slider = mo.ui.range_slider(
         start=-4,
@@ -296,13 +309,7 @@ def _():
 
 
 @app.cell(column=1)
-def yf_ui_fetch(
-    download_from_yf_button,
-    get_close_price_df,
-    mo,
-    pd,
-    symbols_string,
-):
+def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
     # fetch data from Yahoo Finance
     mo.stop(not (download_from_yf_button.value or not mo.running_in_notebook()))
     _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
@@ -347,7 +354,7 @@ def yf_ui_fetch(
 
 
 @app.cell
-def _(force_recompute, mo, run_computation_button):
+def _(force_recompute, run_computation_button):
     mo.md(f"""
     # Run computation
     After deciding the parameters, press this button to start the computation:
@@ -360,7 +367,7 @@ def _(force_recompute, mo, run_computation_button):
 
 
 @app.cell
-def _(mo):
+def _():
     run_computation_button = mo.ui.run_button(label="Run optimization!")
     force_recompute = mo.ui.checkbox(
         value=False, label="Force recomputation even if previous results exist"
@@ -379,7 +386,7 @@ def init_po(PO_kwargs, PortfolioOptimizer, initial_pft, returns_df):
 
 
 @app.cell
-def _(Portfolio, np, returns_df, ticker_prices):
+def _(Portfolio, returns_df, ticker_prices):
     # prepare "pure" portfolios
     _n = len(returns_df.columns)
     pure_portfolios = [
@@ -393,7 +400,7 @@ def _(Portfolio, np, returns_df, ticker_prices):
 
 
 @app.cell
-def _(mo):
+def _():
     # add a number input to select the number of top assets to show
     num_assets_plot = mo.ui.number(
         start=1, stop=10, label="Number of top assets to show in plot: ", value=5
@@ -406,9 +413,7 @@ def _(mo):
 def run_portfolio_opt(
     force_recompute,
     load_results_from_temp_file,
-    mo,
     num_assets_plot,
-    plot_portfolios,
     po,
     pure_portfolios,
     returns_df,
@@ -462,7 +467,7 @@ def run_portfolio_opt(
 
 
 @app.cell
-def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df):
+def _(opt_port_plot, po, pure_portfolios, returns_df):
     # print table with selected portfolio info
     _pft_table = po.best_portfolios + pure_portfolios
     selected_idxs = [x["Index"] for x in opt_port_plot.value]
@@ -504,43 +509,25 @@ def _(mo, opt_port_plot, pd, po, pure_portfolios, returns_df):
 
 @app.cell(column=2)
 def _():
-    import marimo as mo
-
-    import os
-    import tempfile
-    import pickle
-
+    # import DPO
     from DiscretePortfolioOptimization import (
         Portfolio,
         PortfolioOptimizer,
         get_close_price_df,
     )
-
-    import pandas as pd
-    import numpy as np
-    import plotly.express as px
-    return (
-        Portfolio,
-        PortfolioOptimizer,
-        get_close_price_df,
-        mo,
-        np,
-        os,
-        pd,
-        pickle,
-        px,
-        tempfile,
-    )
+    return Portfolio, PortfolioOptimizer, get_close_price_df
 
 
 @app.cell
-def _(os, pickle, tempfile):
+def _():
     # define useful functions
 
     # Function to get path to temporary file
     def get_temp_file_path():
         temp_dir = tempfile.gettempdir()
-        return os.path.join(temp_dir, "portfolio_optimization_results.pkl")
+        # Use session_id to create a unique filename for this notebook run
+        filename = f"portfolio_optimization_results_{session_id}.pkl"
+        return os.path.join(temp_dir, filename)
 
 
     # Function to save results to temporary file
@@ -564,155 +551,153 @@ def _(os, pickle, tempfile):
     return load_results_from_temp_file, save_results_to_temp_file
 
 
-@app.cell
-def _(mo, np, pd, px):
-    # plot best portfolios in return vs volatility space
-    def plot_portfolios(po, pure_portfolios, returns_df, k=5):
-        best_portfolios = po.best_portfolios
-        asset_names = po.returns_df.columns.to_list()
-        # portfolios just computed
-        _metrics = [pft.portfolio_metrics(returns_df) for pft in best_portfolios]
-        _alphas = [pft.alpha for pft in best_portfolios]
-        _returns = [m["Return"] for m in _metrics]
-        _volatilities = [m["Volatility"] for m in _metrics]
-        _indices = [i for i in range(len(_metrics))]
-        _pure = ["Optimized" for _ in range(len(_metrics))]
-        _cash_frac = [pft.cash_value / pft.tot_value for pft in best_portfolios]
+@app.function
+# plot best portfolios in return vs volatility space
+def plot_portfolios(po, pure_portfolios, returns_df, k=5):
+    best_portfolios = po.best_portfolios
+    asset_names = po.returns_df.columns.to_list()
+    # portfolios just computed
+    _metrics = [pft.portfolio_metrics(returns_df) for pft in best_portfolios]
+    _alphas = [pft.alpha for pft in best_portfolios]
+    _returns = [m["Return"] for m in _metrics]
+    _volatilities = [m["Volatility"] for m in _metrics]
+    _indices = [i for i in range(len(_metrics))]
+    _pure = ["Optimized" for _ in range(len(_metrics))]
+    _cash_frac = [pft.cash_value / pft.tot_value for pft in best_portfolios]
 
-        ############################################################
-        # top k assets info
-        # Initialize lists to store formatted top k asset info strings
-        _top_k_assets_info_lists = [[] for _ in range(k)]
+    ############################################################
+    # top k assets info
+    # Initialize lists to store formatted top k asset info strings
+    _top_k_assets_info_lists = [[] for _ in range(k)]
 
-        for pft in best_portfolios:
-            tot_value = pft.tot_value + 1e-2  # Avoid division by zero or near-zero
-            asset_value = pft.asset_value
-            weights = pft.weights
-            top_k_formatted = [
-                ""
-            ] * k  # Initialize with empty strings for this portfolio
-            # Calculate asset fractions relative to total value
-            asset_frac = [
-                (name, (w * asset_value / tot_value))
-                for name, w in zip(asset_names, weights)
-            ]
-            # Sort assets by fraction, descending
-            sorted_asset_frac = sorted(
-                asset_frac, key=lambda item: item[1], reverse=True
-            )
-
-            # Format top k assets info, ensuring we don't go out of bounds
-            num_assets_to_show = min(k, len(sorted_asset_frac))
-            for i in range(num_assets_to_show):
-                name, frac = sorted_asset_frac[i]
-                top_k_formatted[i] = f"{name} ({frac:.1%})"
-
-            # Append the formatted strings to the corresponding lists
-            for i in range(k):
-                _top_k_assets_info_lists[i].append(top_k_formatted[i])
-
-        # Combine with pure portfolios data
-        _metrics_pure = [
-            pft.portfolio_metrics(returns_df) for pft in pure_portfolios
+    for pft in best_portfolios:
+        tot_value = pft.tot_value + 1e-2  # Avoid division by zero or near-zero
+        asset_value = pft.asset_value
+        weights = pft.weights
+        top_k_formatted = [
+            ""
+        ] * k  # Initialize with empty strings for this portfolio
+        # Calculate asset fractions relative to total value
+        asset_frac = [
+            (name, (w * asset_value / tot_value))
+            for name, w in zip(asset_names, weights)
         ]
-        _returns = _returns + [m["Return"] for m in _metrics_pure]
-        _volatilities = _volatilities + [m["Volatility"] for m in _metrics_pure]
-        _indices = _indices + [
-            len(_indices) + i for i in range(len(_metrics_pure))
-        ]
-        _pure = _pure + ["Pure" for _ in range(len(_metrics_pure))]
-
-        # Create optimized df data dictionary
-        optimized_data = {
-            "Return": _returns[: len(_alphas)],
-            "Volatility": _volatilities[: len(_alphas)],
-            "Index": _indices[: len(_alphas)],
-            "Type": _pure[: len(_alphas)],
-            "LogAlpha": np.log10(
-                [max(a, 1e-10) for a in _alphas]
-            ),  # Use a minimum value to avoid log(0)
-            "Cash": _cash_frac,
-        }
-        # Add top k asset info columns
-        for i in range(k):
-            optimized_data[f"#{i + 1} asset"] = _top_k_assets_info_lists[i]
-        optimized_df = pd.DataFrame(optimized_data)
-
-        # Create pure portfolios df
-        pure_df = pd.DataFrame(
-            {
-                "Return": _returns[len(_alphas) :],
-                "Volatility": _volatilities[len(_alphas) :],
-                "Index": _indices[len(_alphas) :],
-                "Type": _pure[len(_alphas) :],
-                "Asset": asset_names,
-            }
+        # Sort assets by fraction, descending
+        sorted_asset_frac = sorted(
+            asset_frac, key=lambda item: item[1], reverse=True
         )
 
-        # Define hover data for optimized portfolios
-        optimized_hover_data = {
+        # Format top k assets info, ensuring we don't go out of bounds
+        num_assets_to_show = min(k, len(sorted_asset_frac))
+        for i in range(num_assets_to_show):
+            name, frac = sorted_asset_frac[i]
+            top_k_formatted[i] = f"{name} ({frac:.1%})"
+
+        # Append the formatted strings to the corresponding lists
+        for i in range(k):
+            _top_k_assets_info_lists[i].append(top_k_formatted[i])
+
+    # Combine with pure portfolios data
+    _metrics_pure = [
+        pft.portfolio_metrics(returns_df) for pft in pure_portfolios
+    ]
+    _returns = _returns + [m["Return"] for m in _metrics_pure]
+    _volatilities = _volatilities + [m["Volatility"] for m in _metrics_pure]
+    _indices = _indices + [
+        len(_indices) + i for i in range(len(_metrics_pure))
+    ]
+    _pure = _pure + ["Pure" for _ in range(len(_metrics_pure))]
+
+    # Create optimized df data dictionary
+    optimized_data = {
+        "Return": _returns[: len(_alphas)],
+        "Volatility": _volatilities[: len(_alphas)],
+        "Index": _indices[: len(_alphas)],
+        "Type": _pure[: len(_alphas)],
+        "LogAlpha": np.log10(
+            [max(a, 1e-10) for a in _alphas]
+        ),  # Use a minimum value to avoid log(0)
+        "Cash": _cash_frac,
+    }
+    # Add top k asset info columns
+    for i in range(k):
+        optimized_data[f"#{i + 1} asset"] = _top_k_assets_info_lists[i]
+    optimized_df = pd.DataFrame(optimized_data)
+
+    # Create pure portfolios df
+    pure_df = pd.DataFrame(
+        {
+            "Return": _returns[len(_alphas) :],
+            "Volatility": _volatilities[len(_alphas) :],
+            "Index": _indices[len(_alphas) :],
+            "Type": _pure[len(_alphas) :],
+            "Asset": asset_names,
+        }
+    )
+
+    # Define hover data for optimized portfolios
+    optimized_hover_data = {
+        "Type": True,
+        "Volatility": ":.2f",
+        "Return": ":.2f",
+        "LogAlpha": ":.2f",
+        "Index": True,
+        "Cash": ":.1%",
+    }
+    # Add top k asset info to hover data
+    for i in range(k):
+        optimized_hover_data[f"#{i + 1} asset"] = (
+            True  # Display the pre-formatted string
+        )
+
+    # Create figure with optimized portfolios using blue colorscale on log scale
+    _plot = px.scatter(
+        optimized_df,
+        x="Volatility",
+        y="Return",
+        color="LogAlpha",  # Use log scale for coloring
+        color_continuous_scale="Blues",
+        hover_data=optimized_hover_data,
+        labels={"LogAlpha": "Log10(Alpha)"},  # Add label for color bar
+    )
+    _plot.update_layout(
+        title="Portfolio Optimization: Return vs. Volatility"
+    )  # Add title
+
+    # Add pure portfolios as orange markers
+    pure_trace = px.scatter(
+        pure_df,
+        x="Volatility",
+        y="Return",
+        hover_data={
             "Type": True,
             "Volatility": ":.2f",
             "Return": ":.2f",
-            "LogAlpha": ":.2f",
             "Index": True,
-            "Cash": ":.1%",
-        }
-        # Add top k asset info to hover data
-        for i in range(k):
-            optimized_hover_data[f"#{i + 1} asset"] = (
-                True  # Display the pre-formatted string
-            )
+            "Asset": True,
+        },
+    ).data[0]
 
-        # Create figure with optimized portfolios using blue colorscale on log scale
-        _plot = px.scatter(
-            optimized_df,
-            x="Volatility",
-            y="Return",
-            color="LogAlpha",  # Use log scale for coloring
-            color_continuous_scale="Blues",
-            hover_data=optimized_hover_data,
-            labels={"LogAlpha": "Log10(Alpha)"},  # Add label for color bar
-        )
-        _plot.update_layout(
-            title="Portfolio Optimization: Return vs. Volatility"
-        )  # Add title
+    pure_trace.marker.color = "orange"
+    pure_trace.marker.symbol = "x"
+    _plot.add_trace(pure_trace)
 
-        # Add pure portfolios as orange markers
-        pure_trace = px.scatter(
-            pure_df,
-            x="Volatility",
-            y="Return",
-            hover_data={
-                "Type": True,
-                "Volatility": ":.2f",
-                "Return": ":.2f",
-                "Index": True,
-                "Asset": True,
-            },
-        ).data[0]
+    # Update trace properties for optimized portfolios for legend
+    _plot.update_traces(
+        marker_size=10,
+        marker_line_width=1.5,
+        marker_line_color="black",
+    )
 
-        pure_trace.marker.color = "orange"
-        pure_trace.marker.symbol = "x"
-        _plot.add_trace(pure_trace)
+    # Ensure the pure portfolio trace also has consistent marker size
+    _plot.update_traces(
+        marker_size=10,
+        marker_line_width=2,
+    )
 
-        # Update trace properties for optimized portfolios for legend
-        _plot.update_traces(
-            marker_size=10,
-            marker_line_width=1.5,
-            marker_line_color="black",
-        )
+    mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
 
-        # Ensure the pure portfolio trace also has consistent marker size
-        _plot.update_traces(
-            marker_size=10,
-            marker_line_width=2,
-        )
-
-        mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
-
-        return mo.ui.plotly(_plot)
-    return (plot_portfolios,)
+    return mo.ui.plotly(_plot)
 
 
 if __name__ == "__main__":
