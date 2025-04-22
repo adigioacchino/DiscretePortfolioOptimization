@@ -10,6 +10,9 @@ from DPO_UserInterface import (
 )
 
 import DiscretePortfolioOptimization as dpo
+
+import os
+import pickle
 import marimo as mo
 
 
@@ -63,13 +66,36 @@ def test_init_po():
     assert len(po.best_portfolios) == 0
 
 
-def test_run_portfolio_opt():
+def test_run_portfolio_opt(tmp_path):
     # force_recompute = True
     po = get_small_po()
     force_recompute = get_mock_button(value=True)
 
     # run the portfolio optimization cell
-    outs, defs = run_portfolio_opt.run(force_recompute=force_recompute, po=po)
+    # re-define load_results_from_temp_file and save_results_to_temp_file
+    # to fix the temp file path
+    def load_results_from_temp_file():
+        temp_file_path = os.path.join(tmp_path, "portfolio_optimization_results.pkl")
+        if os.path.exists(temp_file_path):
+            try:
+                with open(temp_file_path, "rb") as f:
+                    return pickle.load(f)
+            except Exception as e:
+                print(f"Error loading saved results: {e}")
+                return None
+        return None
+
+    def save_results_to_temp_file(portfolios):
+        temp_file_path = os.path.join(tmp_path, "portfolio_optimization_results.pkl")
+        with open(temp_file_path, "wb") as f:
+            pickle.dump(portfolios, f)
+
+    outs, defs = run_portfolio_opt.run(
+        force_recompute=force_recompute,
+        po=po,
+        load_results_from_temp_file=load_results_from_temp_file,
+        save_results_to_temp_file=save_results_to_temp_file,
+    )
 
     assert isinstance(outs, mo.ui.plotly)
     assert "opt_port_plot" in defs.keys()
@@ -81,5 +107,10 @@ def test_run_portfolio_opt():
     po = get_small_po()
 
     # run the portfolio optimization cell again
-    outs, defs = run_portfolio_opt.run(force_recompute=force_recompute, po=po)
+    outs, defs = run_portfolio_opt.run(
+        force_recompute=force_recompute,
+        po=po,
+        load_results_from_temp_file=load_results_from_temp_file,
+        save_results_to_temp_file=save_results_to_temp_file,
+    )
     assert len(po.best_portfolios) == len(po.alpha_schedule) * 2
