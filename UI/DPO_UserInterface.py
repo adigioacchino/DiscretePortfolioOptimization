@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.13.0"
+__generated_with = "0.13.1"
 app = marimo.App(width="columns")
 
 with app.setup:
@@ -299,12 +299,16 @@ def _(
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
-def _():
+def _(returns_df):
+    _df = pd.DataFrame(columns=returns_df.columns, dtype=int)
+    user_portfolios = mo.ui.data_editor(
+        _df, page_size=10, column_sizing_mode="fit"
+    )
+    mo.accordion(
+        {
+            "### Add your portfolios here to see them in the final plot": user_portfolios
+        }
+    )
     return
 
 
@@ -554,9 +558,11 @@ def _():
 @app.function
 # plot best portfolios in return vs volatility space
 def plot_portfolios(po, pure_portfolios, returns_df, k=5):
+    ############################################################
+    ############################################################
+    # first, let's deal with optimized portfolios
     best_portfolios = po.best_portfolios
     asset_names = po.returns_df.columns.to_list()
-    # portfolios just computed
     _metrics = [pft.portfolio_metrics(returns_df) for pft in best_portfolios]
     _alphas = [pft.alpha for pft in best_portfolios]
     _returns = [m["Return"] for m in _metrics]
@@ -597,23 +603,12 @@ def plot_portfolios(po, pure_portfolios, returns_df, k=5):
         for i in range(k):
             _top_k_assets_info_lists[i].append(top_k_formatted[i])
 
-    # Combine with pure portfolios data
-    _metrics_pure = [
-        pft.portfolio_metrics(returns_df) for pft in pure_portfolios
-    ]
-    _returns = _returns + [m["Return"] for m in _metrics_pure]
-    _volatilities = _volatilities + [m["Volatility"] for m in _metrics_pure]
-    _indices = _indices + [
-        len(_indices) + i for i in range(len(_metrics_pure))
-    ]
-    _pure = _pure + ["Pure" for _ in range(len(_metrics_pure))]
-
     # Create optimized df data dictionary
     optimized_data = {
-        "Return": _returns[: len(_alphas)],
-        "Volatility": _volatilities[: len(_alphas)],
-        "Index": _indices[: len(_alphas)],
-        "Type": _pure[: len(_alphas)],
+        "Return": _returns,
+        "Volatility": _volatilities,
+        "Index": _indices,
+        "Type": _pure,
         "LogAlpha": np.log10(
             [max(a, 1e-10) for a in _alphas]
         ),  # Use a minimum value to avoid log(0)
@@ -623,17 +618,6 @@ def plot_portfolios(po, pure_portfolios, returns_df, k=5):
     for i in range(k):
         optimized_data[f"#{i + 1} asset"] = _top_k_assets_info_lists[i]
     optimized_df = pd.DataFrame(optimized_data)
-
-    # Create pure portfolios df
-    pure_df = pd.DataFrame(
-        {
-            "Return": _returns[len(_alphas) :],
-            "Volatility": _volatilities[len(_alphas) :],
-            "Index": _indices[len(_alphas) :],
-            "Type": _pure[len(_alphas) :],
-            "Asset": asset_names,
-        }
-    )
 
     # Define hover data for optimized portfolios
     optimized_hover_data = {
@@ -660,9 +644,30 @@ def plot_portfolios(po, pure_portfolios, returns_df, k=5):
         hover_data=optimized_hover_data,
         labels={"LogAlpha": "Log10(Alpha)"},  # Add label for color bar
     )
-    _plot.update_layout(
-        title="Portfolio Optimization: Return vs. Volatility"
-    )  # Add title
+
+    ############################################################
+    ############################################################
+    # Now, let's work with pure portfolios data
+    _metrics_pure = [
+        pft.portfolio_metrics(returns_df) for pft in pure_portfolios
+    ]
+    _returns = _returns + [m["Return"] for m in _metrics_pure]
+    _volatilities = _volatilities + [m["Volatility"] for m in _metrics_pure]
+    _indices = _indices + [
+        len(_indices) + i for i in range(len(_metrics_pure))
+    ]
+    _pure = _pure + ["Pure" for _ in range(len(_metrics_pure))]
+
+    # Create pure portfolios df
+    pure_df = pd.DataFrame(
+        {
+            "Return": _returns[len(_alphas) :],
+            "Volatility": _volatilities[len(_alphas) :],
+            "Index": _indices[len(_alphas) :],
+            "Type": _pure[len(_alphas) :],
+            "Asset": asset_names,
+        }
+    )
 
     # Add pure portfolios as orange markers
     pure_trace = px.scatter(
@@ -682,6 +687,13 @@ def plot_portfolios(po, pure_portfolios, returns_df, k=5):
     pure_trace.marker.symbol = "x"
     _plot.add_trace(pure_trace)
 
+    ############################################################
+    ############################################################
+    # Improve plot aesthetics
+    _plot.update_layout(
+        title="Portfolio Optimization: Return vs. Volatility"
+    )
+
     # Update trace properties for optimized portfolios for legend
     _plot.update_traces(
         marker_size=10,
@@ -695,9 +707,17 @@ def plot_portfolios(po, pure_portfolios, returns_df, k=5):
         marker_line_width=2,
     )
 
+    ############################################################
+    ############################################################
+    # deal with marimo layout and return
     mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
 
     return mo.ui.plotly(_plot)
+
+
+@app.cell
+def _():
+    return
 
 
 if __name__ == "__main__":
