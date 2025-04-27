@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.13.1"
+__generated_with = "0.13.2"
 app = marimo.App(width="columns")
 
 with app.setup:
@@ -301,15 +301,26 @@ def _(
 @app.cell
 def _(returns_df):
     _df = pd.DataFrame(columns=returns_df.columns, dtype=int)
-    user_portfolios = mo.ui.data_editor(
+    raw_user_portfolios = mo.ui.data_editor(
         _df, page_size=10, column_sizing_mode="fit"
     )
-    mo.accordion(
-        {
-            "### Add your portfolios here to see them in the final plot": user_portfolios
-        }
-    )
-    return
+    _txt = "### Add your portfolios here to see them in the final plot"
+    mo.accordion({_txt: raw_user_portfolios})
+    return (raw_user_portfolios,)
+
+
+@app.cell
+def _(Portfolio, raw_user_portfolios, ticker_prices):
+    # from raw to user portfolios
+    user_portfolios = []
+    for i in range(len(raw_user_portfolios.value)):
+        user_portfolios.append(
+            Portfolio(
+                ticker_prices,
+                allocations=raw_user_portfolios.value.iloc[i].to_list(),
+            )
+        )
+    return (user_portfolios,)
 
 
 @app.cell(column=1)
@@ -424,6 +435,7 @@ def run_portfolio_opt(
     returns_df,
     run_computation_button,
     save_results_to_temp_file,
+    user_portfolios,
 ):
     # here the computation is actually run
     mo.stop(not (run_computation_button.value or not mo.running_in_notebook()))
@@ -432,10 +444,11 @@ def run_portfolio_opt(
     def plot_portfolios_closure(
         po,
         pure_portfolios=pure_portfolios,
+        user_portfolios=user_portfolios,
         returns_df=returns_df,
         k=num_assets_plot.value,
     ):
-        return plot_portfolios(po, pure_portfolios, returns_df, k)
+        return plot_portfolios(po, pure_portfolios, user_portfolios, returns_df, k)
 
 
     # Check for existing saved portfolio results
@@ -472,9 +485,9 @@ def run_portfolio_opt(
 
 
 @app.cell
-def _(opt_port_plot, po, pure_portfolios, returns_df):
+def _(opt_port_plot, po, pure_portfolios, returns_df, user_portfolios):
     # print table with selected portfolio info
-    _pft_table = po.best_portfolios + pure_portfolios
+    _pft_table = po.best_portfolios + pure_portfolios + user_portfolios
     selected_idxs = [x["Index"] for x in opt_port_plot.value]
     selected_portfolios = [_pft_table[i] for i in selected_idxs]
 
@@ -494,8 +507,8 @@ def _(opt_port_plot, po, pure_portfolios, returns_df):
             "Cash": _cash_values,
         },
     )
-    for i, symbol in enumerate(_symbols):
-        sp_df[symbol] = [alloc[i] for alloc in _allocations]
+    for _i, _symbol in enumerate(_symbols):
+        sp_df[_symbol] = [alloc[_i] for alloc in _allocations]
     sp_df.drop_duplicates(inplace=True, keep="last")
     sp_df.reset_index(inplace=True)
 
@@ -559,7 +572,7 @@ def _():
 @app.cell
 def plot_portfolios(po):
     # plot best portfolios in return vs volatility space
-    def _prepare_portfolios_plotting(portfolios, returns_df, k):
+    def _prepare_portfolios_plotting(portfolios, returns_df, k, is_optimized=True):
         # top k assets info
         # Initialize lists to store formatted top k asset info strings
         asset_names = po.returns_df.columns.to_list()
@@ -592,49 +605,74 @@ def plot_portfolios(po):
                 top_k_assets_info_lists[i].append(top_k_formatted[i])
 
         # Create optimized df data dictionary
-        metrics = [pft.portfolio_metrics(returns_df) for pft in portfolios]
-        optimized_data = {
-            "Return": [m["Return"] for m in metrics],
-            "Volatility": [m["Volatility"] for m in metrics],
-            "Index": [i for i in range(len(metrics))],
-            "Type": ["Optimized" for _ in range(len(metrics))],
-            "LogAlpha": np.log10(
-                [max(pft.alpha, 1e-10) for pft in portfolios]
-            ),  # Use a minimum value to avoid log(0)
-            "Cash": [pft.cash_value / pft.tot_value for pft in portfolios],
-        }
-        # Add top k asset info columns
-        for i in range(k):
-            optimized_data[f"#{i + 1} asset"] = top_k_assets_info_lists[i]
-        optimized_df = pd.DataFrame(optimized_data)
+        if is_optimized:
+            metrics = [pft.portfolio_metrics(returns_df) for pft in portfolios]
+            optimized_data = {
+                "Return": [m["Return"] for m in metrics],
+                "Volatility": [m["Volatility"] for m in metrics],
+                "Index": [i for i in range(len(metrics))],
+                "Type": ["Optimized" for _ in range(len(metrics))],
+                "LogAlpha": np.log10(
+                    [max(pft.alpha, 1e-10) for pft in portfolios]
+                ),  # Use a minimum value to avoid log(0)
+                "Cash": [pft.cash_value / pft.tot_value for pft in portfolios],
+            }
+            # Add top k asset info columns
+            for i in range(k):
+                optimized_data[f"#{i + 1} asset"] = top_k_assets_info_lists[i]
+            optimized_df = pd.DataFrame(optimized_data)
 
-        # Define hover data for optimized portfolios
-        optimized_hover_data = {
-            "Type": True,
-            "Volatility": ":.2f",
-            "Return": ":.2f",
-            "LogAlpha": ":.2f",
-            "Index": True,
-            "Cash": ":.1%",
-        }
-        # Add top k asset info to hover data
-        for i in range(k):
-            optimized_hover_data[f"#{i + 1} asset"] = (
-                True  # Display the pre-formatted string
-            )
+            # Define hover data for optimized portfolios
+            optimized_hover_data = {
+                "Type": True,
+                "Return": ":.2f",
+                "Volatility": ":.2f",
+                "Index": True,
+                "LogAlpha": ":.2f",
+                "Cash": ":.1%",
+            }
+            # Add top k asset info to hover data
+            for i in range(k):
+                optimized_hover_data[f"#{i + 1} asset"] = (
+                    True  # Display the pre-formatted string
+                )
+        else:
+            metrics = [pft.portfolio_metrics(returns_df) for pft in portfolios]
+            optimized_data = {
+                "Return": [m["Return"] for m in metrics],
+                "Volatility": [m["Volatility"] for m in metrics],
+                "Index": [i for i in range(len(metrics))],
+                "Type": ["User" for _ in range(len(metrics))],
+            }
+            # Add top k asset info columns
+            for i in range(k):
+                optimized_data[f"#{i + 1} asset"] = top_k_assets_info_lists[i]
+            optimized_df = pd.DataFrame(optimized_data)
+
+            # Define hover data for optimized portfolios
+            optimized_hover_data = {
+                "Type": True,
+                "Return": ":.2f",
+                "Volatility": ":.2f",
+                "Index": True,
+            }
+            # Add top k asset info to hover data
+            for i in range(k):
+                optimized_hover_data[f"#{i + 1} asset"] = (
+                    True  # Display the pre-formatted string
+                )
 
         return optimized_df, optimized_hover_data
 
 
-    def plot_portfolios(po, pure_portfolios, returns_df, k=5):
-        # first, let's deal with optimized portfolios
+    def plot_portfolios(po, pure_portfolios, user_portfolios, returns_df, k=5):
+        # 1. optimized portfolios
         best_portfolios = po.best_portfolios
         optimized_df, optimized_hover_data = _prepare_portfolios_plotting(
             best_portfolios, returns_df, k
         )
 
-        ############################################################
-        # Now, let's work with pure portfolios data
+        # 2. pure portfolios
         asset_names = po.returns_df.columns.to_list()
         metrics_pure = [
             pft.portfolio_metrics(returns_df) for pft in pure_portfolios
@@ -654,6 +692,12 @@ def plot_portfolios(po):
                 "Asset": asset_names,
             }
         )
+
+        # 3. user portfolios
+        user_df, user_hover_data = _prepare_portfolios_plotting(
+            user_portfolios, returns_df, k, is_optimized=False
+        )
+        user_df["Index"] = [_indices[-1] + i + 1 for i in range(len(user_df))]
 
         ############################################################
         # Create plot
@@ -684,6 +728,17 @@ def plot_portfolios(po):
         pure_trace.marker.symbol = "x"
         _plot.add_trace(pure_trace)
 
+        # Add user portfolios as red markers
+        user_trace = px.scatter(
+            user_df,
+            x="Volatility",
+            y="Return",
+            hover_data=user_hover_data,
+        ).data[0]
+        user_trace.marker.color = "red"
+        user_trace.marker.symbol = "diamond"
+        _plot.add_trace(user_trace)
+
         # Improve plot aesthetics
         _plot.update_layout(title="Portfolio Optimization: Return vs. Volatility")
 
@@ -700,7 +755,6 @@ def plot_portfolios(po):
             marker_line_width=2,
         )
 
-        ############################################################
         ############################################################
         # deal with marimo layout and return
         mo.output.replace_at_index(mo.ui.plotly(_plot), 1)
