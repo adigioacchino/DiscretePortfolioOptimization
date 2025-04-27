@@ -570,12 +570,12 @@ def _():
 
 
 @app.cell
-def plot_portfolios(po):
+def _():
     # plot best portfolios in return vs volatility space
     def _prepare_portfolios_plotting(portfolios, returns_df, k, is_optimized=True):
         # top k assets info
         # Initialize lists to store formatted top k asset info strings
-        asset_names = po.returns_df.columns.to_list()
+        asset_names = returns_df.columns.to_list()
         top_k_assets_info_lists = [[] for _ in range(k)]
         for pft in portfolios:
             tot_value = pft.tot_value + 1e-2  # Avoid division by zero or near-zero
