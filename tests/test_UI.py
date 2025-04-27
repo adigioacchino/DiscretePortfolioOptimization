@@ -114,3 +114,25 @@ def test_run_portfolio_opt(tmp_path):
         save_results_to_temp_file=save_results_to_temp_file,
     )
     assert len(po.best_portfolios) == len(po.alpha_schedule) * 2
+
+    # now run with user portfolios set
+    _, yf_defs = yf_ui_fetch.run()
+    user_portfolios = [
+        dpo.Portfolio(
+            yf_defs["ticker_prices"],
+            allocations=[1 for _ in range(len(yf_defs["ticker_prices"]))],
+        ),
+        dpo.Portfolio(
+            yf_defs["ticker_prices"],
+            allocations=[2 for _ in range(len(yf_defs["ticker_prices"]))],
+        ),
+    ]
+    outs, defs = run_portfolio_opt.run(
+        force_recompute=force_recompute,
+        po=po,
+        user_portfolios=user_portfolios,
+    )
+
+    assert isinstance(outs, mo.ui.plotly)
+    assert "opt_port_plot" in defs.keys()
+    assert isinstance(defs["opt_port_plot"], mo.ui.plotly)
