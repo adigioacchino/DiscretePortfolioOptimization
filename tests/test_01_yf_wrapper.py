@@ -55,3 +55,15 @@ def test_get_close_price_df():
     assert close_price_df.columns.tolist() == ["AAPL", "MSFT"]
     assert tickers_hits == ["AAPL", "MSFT"]
     assert tickers_miss == ["ABCDEFG"]
+
+    # test drop_missing_dates
+    tickers = "AAPL, ABNB"
+    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=True)
+    assert isinstance(close_price_df, pd.DataFrame)
+    assert close_price_df.index.name == "Date"
+    assert close_price_df.index.min() > pd.Timestamp("2020-01-01")
+
+    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=False)
+    assert isinstance(close_price_df, pd.DataFrame)
+    assert close_price_df.index.name == "Date"
+    assert close_price_df.index.min() < pd.Timestamp("2000-01-01")
