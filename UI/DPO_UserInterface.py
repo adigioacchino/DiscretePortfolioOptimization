@@ -328,7 +328,7 @@ def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
     # fetch data from Yahoo Finance
     mo.stop(not (download_from_yf_button.value or not mo.running_in_notebook()))
     _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
-        symbols_string.value
+        symbols_string.value, drop_missing_dates=False
     )
 
     # Create a dictionary mapping tickers to status emojis
@@ -350,6 +350,11 @@ def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
     # Convert Series to DataFrame for display
     _status_df = _status_series.to_frame()
 
+    # add info about first available date to _status_df
+    _first_valid_indices = _close_df.apply(lambda col: col.first_valid_index())
+    _first_valid_dates_formatted = _first_valid_indices.dt.strftime("%Y-%m-%d")
+    _status_df["First available date in YF"] = _first_valid_dates_formatted
+
     # Display the table (in a notebook, the last expression is displayed)
     mo.output.append(
         mo.center(
@@ -363,8 +368,9 @@ def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
     )
 
     # define useful vars for computations
-    returns_df = _close_df.pct_change().dropna() * 100
-    ticker_prices = _close_df.iloc[-1].to_list()
+    _clean_close_df = _close_df.dropna()
+    returns_df = _clean_close_df.pct_change().dropna() * 100
+    ticker_prices = _clean_close_df.iloc[-1].to_list()
     return returns_df, ticker_prices
 
 

@@ -22,12 +22,15 @@ def download_close_price(ticker: str) -> pd.Series:
     return data["Close"][ticker]
 
 
-def get_close_price_df(tickers: str) -> Tuple[pd.DataFrame, List[str], List[str]]:
+def get_close_price_df(
+    tickers: str, drop_missing_dates: bool = True
+) -> Tuple[pd.DataFrame, List[str], List[str]]:
     """
     Download the close price of a list of stocks from Yahoo Finance.
 
     Args:
         tickers: str, a string of tickers separated by a comma
+        drop_missing_dates: bool, if True, drop dates for which at least one ticker is missing
 
     Returns:
         pd.DataFrame, the close price of the stocks
@@ -61,4 +64,11 @@ def get_close_price_df(tickers: str) -> Tuple[pd.DataFrame, List[str], List[str]
         else:
             ticker_misses.append(ticker)
             print(f"Ticker {ticker} not found, skipping")
-    return pd.DataFrame(all_data).dropna(), ticker_hits, ticker_misses
+
+    if drop_missing_dates:
+        # drop missing dates
+        res_df = pd.DataFrame(all_data).dropna()
+    else:
+        # fill missing dates with NaN
+        res_df = pd.DataFrame(all_data)
+    return res_df, ticker_hits, ticker_misses
