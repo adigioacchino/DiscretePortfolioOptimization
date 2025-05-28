@@ -38,8 +38,8 @@ class Portfolio:
         """
         self.current_prices = np.array(current_prices, dtype=float)
         self.num_assets = len(current_prices)
-        self.alpha: Optional[float] = (
-            None  # alpha is not used in this class, but it is used in the optimization class
+        self.eta: Optional[float] = (
+            None  # eta is not used in this class, but it is used in the optimization class
         )
         self.weights: np.ndarray
         self.asset_value: float
