@@ -91,31 +91,31 @@ def _(Portfolio, random_seed, ticker_prices, total_value):
 def _():
     # load from file the default values for sliders
     po_kwargs_defaults = {
-        "alpha0": -2,
-        "alpha1": 0.5,
-        "n_alphas": 5,
+        "eta0": -2,
+        "eta1": 0.5,
+        "n_etas": 5,
         "gamma_switch": False,
         "gamma": -1,
         "delta_switch": False,
         "delta": -1,
         "n_therm_steps": 500,
-        "beta0": 1,
-        "beta1": 3,
-        "n_betas": 2500,
-        "n_steps_per_beta": 1,
+        "theta0": 1,
+        "theta1": 3,
+        "n_thetas": 2500,
+        "n_steps_per_theta": 1,
     }
     return (po_kwargs_defaults,)
 
 
 @app.cell
 def _(
-    alpha_slider,
-    beta_slider,
+    eta_slider,
+    theta_slider,
     delta_switch,
     gamma_switch,
-    n_alphas,
-    n_betas,
-    n_steps_per_beta,
+    n_etas,
+    n_thetas,
+    n_steps_per_theta,
     n_therm_steps,
 ):
     _adv_settings = mo.accordion(
@@ -127,11 +127,11 @@ def _(
                     ),
                     n_therm_steps,
                     mo.md(
-                        "**Beta**: beta controls the optimization dynamics. More betas means a longer, but more precise, optimization."
+                        "**Theta**: theta controls the optimization dynamics. More thetas means a longer, but more precise, optimization."
                     ),
-                    beta_slider,
-                    n_betas,
-                    n_steps_per_beta,
+                    theta_slider,
+                    n_thetas,
+                    n_steps_per_theta,
                     mo.md(
                         "**Gamma**: a portfolio optimized with a large gamma will be more differentiated."
                     ),
@@ -150,10 +150,10 @@ def _(
         [
             mo.md("## Settings for Simulated Annealing"),
             mo.md(
-                "**Alpha**: a portfolio optimized with a large alpha will have lower volatility but also lower return."
+                "**Eta**: a portfolio optimized with a large eta will have lower volatility but also lower return."
             ),
-            alpha_slider,
-            n_alphas,
+            eta_slider,
+            n_etas,
             _adv_settings,
         ],
         align="start",
@@ -175,21 +175,21 @@ def _(delta, delta_switch, gamma, gamma_switch):
 @app.cell
 def _(po_kwargs_defaults):
     # UI elements - simulated annealing
-    alpha_slider = mo.ui.range_slider(
+    eta_slider = mo.ui.range_slider(
         start=-4,
         stop=4,
         step=0.1,
-        value=[po_kwargs_defaults["alpha0"], po_kwargs_defaults["alpha1"]],
-        label="Range of alpha values (exponent of 10)",
+        value=[po_kwargs_defaults["eta0"], po_kwargs_defaults["eta1"]],
+        label="Range of eta values (exponent of 10)",
         show_value=False,
         full_width=True,
     )
-    n_alphas = mo.ui.slider(
+    n_etas = mo.ui.slider(
         start=2,
         stop=50,
         step=1,
-        value=po_kwargs_defaults["n_alphas"],
-        label="Number of alpha values",
+        value=po_kwargs_defaults["n_etas"],
+        label="Number of eta values",
         show_value=True,
     )
     gamma_switch = mo.ui.switch(
@@ -222,55 +222,55 @@ def _(po_kwargs_defaults):
         label="Number of thermalization steps",
         show_value=True,
     )
-    beta_slider = mo.ui.range_slider(
+    theta_slider = mo.ui.range_slider(
         start=-1,
         stop=8,
         step=0.5,
-        value=[po_kwargs_defaults["beta0"], po_kwargs_defaults["beta1"]],
-        label="Range of beta values (exponent of 10)",
+        value=[po_kwargs_defaults["theta0"], po_kwargs_defaults["theta1"]],
+        label="Range of theta values (exponent of 10)",
         show_value=True,
     )
-    n_betas = mo.ui.slider(
+    n_thetas = mo.ui.slider(
         start=1_000,
         stop=10_000,
         step=500,
-        value=po_kwargs_defaults["n_betas"],
-        label="Number of different betas used",
+        value=po_kwargs_defaults["n_thetas"],
+        label="Number of different thetas used",
         show_value=True,
     )
-    n_steps_per_beta = mo.ui.slider(
+    n_steps_per_theta = mo.ui.slider(
         start=1,
         stop=10,
         step=1,
-        value=po_kwargs_defaults["n_steps_per_beta"],
-        label="Number of SA steps done at each beta",
+        value=po_kwargs_defaults["n_steps_per_theta"],
+        label="Number of SA steps done at each theta",
         show_value=True,
     )
     return (
-        alpha_slider,
-        beta_slider,
+        eta_slider,
+        theta_slider,
         delta,
         delta_switch,
         gamma,
         gamma_switch,
-        n_alphas,
-        n_betas,
-        n_steps_per_beta,
+        n_etas,
+        n_thetas,
+        n_steps_per_theta,
         n_therm_steps,
     )
 
 
 @app.cell
 def _(
-    alpha_slider,
-    beta_slider,
+    eta_slider,
+    theta_slider,
     delta,
     delta_switch,
     gamma,
     gamma_switch,
-    n_alphas,
-    n_betas,
-    n_steps_per_beta,
+    n_etas,
+    n_thetas,
+    n_steps_per_theta,
     n_therm_steps,
 ):
     # prepare kwarg for PortfolioOptimzer
@@ -284,16 +284,16 @@ def _(
         delta_value = 0
 
     PO_kwargs = {
-        "alpha0": 10 ** alpha_slider.value[0],
-        "alpha1": 10 ** alpha_slider.value[1],
-        "n_alphas": n_alphas.value,
+        "eta0": 10 ** eta_slider.value[0],
+        "eta1": 10 ** eta_slider.value[1],
+        "n_etas": n_etas.value,
         "gamma": gamma_value,
         "delta": delta_value,
         "n_therm_steps": n_therm_steps.value,
-        "beta0": 10 ** beta_slider.value[0],
-        "beta1": 10 ** beta_slider.value[1],
-        "n_betas": n_betas.value,
-        "n_steps_per_beta": n_steps_per_beta.value,
+        "theta0": 10 ** theta_slider.value[0],
+        "theta1": 10 ** theta_slider.value[1],
+        "n_thetas": n_thetas.value,
+        "n_steps_per_theta": n_steps_per_theta.value,
     }
     return (PO_kwargs,)
 
@@ -618,8 +618,8 @@ def _():
                 "Volatility": [m["Volatility"] for m in metrics],
                 "Index": [i for i in range(len(metrics))],
                 "Type": ["Optimized" for _ in range(len(metrics))],
-                "LogAlpha": np.log10(
-                    [max(pft.alpha, 1e-10) for pft in portfolios]
+                "LogEta": np.log10(
+                    [max(pft.eta, 1e-10) for pft in portfolios]
                 ),  # Use a minimum value to avoid log(0)
                 "Cash": [pft.cash_value / pft.tot_value for pft in portfolios],
             }
@@ -634,7 +634,7 @@ def _():
                 "Return": ":.2f",
                 "Volatility": ":.2f",
                 "Index": True,
-                "LogAlpha": ":.2f",
+                "LogEta": ":.2f",
                 "Cash": ":.1%",
             }
             # Add top k asset info to hover data
@@ -712,10 +712,10 @@ def _():
             optimized_df,
             x="Volatility",
             y="Return",
-            color="LogAlpha",  # Use log scale for coloring
+            color="LogEta",  # Use log scale for coloring
             color_continuous_scale="Blues",
             hover_data=optimized_hover_data,
-            labels={"LogAlpha": "Log10(Alpha)"},  # Add label for color bar
+            labels={"LogEta": "Log10(Eta)"},  # Add label for color bar
         )
         # Add pure portfolios as orange markers
         pure_trace = px.scatter(

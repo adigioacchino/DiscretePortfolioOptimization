@@ -16,21 +16,21 @@ class PortfolioOptimizer:
     Args:
         initial_portfolio: Portfolio, the initial portfolio to optimize
         returns_df: pd.DataFrame, the returns of the assets in the portfolio
-        alpha0: float, the smallest alpha to use (larger alpha -> lower volatility)
-        alpha1: float, the largest alpha to use (larger alpha -> lower volatility)
-        n_alphas: int, the number of alphas to use, so the number of final optimized portfolios
+        eta0: float, the smallest eta to use (larger eta -> lower volatility)
+        eta1: float, the largest eta to use (larger eta -> lower volatility)
+        n_etas: int, the number of etas to use, so the number of final optimized portfolios
         gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
         delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
         n_therm_steps: int, the number of thermalization steps to use before starting the optimization
-        beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
-            `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+        theta0: float, the initial theta for the Simulated Annealing algorithm. It should be so that
+            `theta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
             portfolios separated by a random move.
-        beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
-            `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+        theta1: float, the final theta for the Simulated Annealing algorithm. It should be so that
+            `theta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
             portfolios separated by a random move.
-        n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+        n_thetas: int, the number of thetas to use in the Simulated Annealing algorithm. Larger values
             will make the algorithm more precise but slower.
-        n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+        n_steps_per_theta: int, the number of steps per theta to use in the Simulated Annealing algorithm.
             Larger values will make the algorithm more precise but slower.
     """
 
@@ -38,16 +38,16 @@ class PortfolioOptimizer:
         self,
         initial_portfolio: Portfolio,
         returns_df: pd.DataFrame,
-        alpha0: float = 1e1,
-        alpha1: float = 1e3,
-        n_alphas: int = 10,
+        eta0: float = 1e1,
+        eta1: float = 1e3,
+        n_etas: int = 10,
         gamma: float = 0.0,
         delta: float = 0.0,
         n_therm_steps: int = 1_000,
-        beta0: float = 1,
-        beta1: float = 1e3,
-        n_betas: int = 5_000,
-        n_steps_per_beta: int = 1,
+        theta0: float = 1,
+        theta1: float = 1e3,
+        n_thetas: int = 5_000,
+        n_steps_per_theta: int = 1,
     ):
         """
         Initialize the PortfolioOptimizer.
@@ -55,21 +55,21 @@ class PortfolioOptimizer:
         Args:
             initial_portfolio: Portfolio, the initial portfolio to optimize
             returns_df: pd.DataFrame, the returns of the assets in the portfolio
-            alpha0: float, the smallest alpha to use (larger alpha -> lower volatility)
-            alpha1: float, the largest alpha to use (larger alpha -> lower volatility)
-            n_alphas: int, the number of alphas to use, so the number of final optimized portfolios
+            eta0: float, the smallest eta to use (larger eta -> lower volatility)
+            eta1: float, the largest eta to use (larger eta -> lower volatility)
+            n_etas: int, the number of etas to use, so the number of final optimized portfolios
             gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
             delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
             n_therm_steps: int, the number of thermalization steps to use before starting the optimization
-            beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
-                `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+            theta0: float, the initial theta for the Simulated Annealing algorithm. It should be so that
+                `theta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
                 portfolios separated by a random move.
-            beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
-                `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+            theta1: float, the final theta for the Simulated Annealing algorithm. It should be so that
+                `theta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
                 portfolios separated by a random move.
-            n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+            n_thetas: int, the number of thetas to use in the Simulated Annealing algorithm. Larger values
                 will make the algorithm more precise but slower.
-            n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+            n_steps_per_theta: int, the number of steps per theta to use in the Simulated Annealing algorithm.
                 Larger values will make the algorithm more precise but slower.
         """
         self.initial_portfolio = initial_portfolio.copy()
@@ -96,14 +96,14 @@ class PortfolioOptimizer:
                 " remember that returns should be in *daily percentage* format."
             )
         self.returns_df = returns_df
-        self.alpha_schedule = np.geomspace(alpha0, alpha1, n_alphas)
-        self.beta_schedule = self._prepare_exp_beta_schedule(
-            beta0, beta1, n_therm_steps, n_betas, n_steps_per_beta
+        self.eta_schedule = np.geomspace(eta0, eta1, n_etas)
+        self.theta_schedule = self._prepare_exp_theta_schedule(
+            theta0, theta1, n_therm_steps, n_thetas, n_steps_per_theta
         )
 
     @staticmethod
     def _portfolio_minus_energy(
-        alpha: float,
+        eta: float,
         gamma: float,
         delta: float,
         portfolio: Portfolio,
@@ -113,10 +113,10 @@ class PortfolioOptimizer:
         Compute the score of a portfolio.
         The score is defined as:
 
-        `Return - alpha * Volatility - gamma * sum(weights**2) - delta * cash_value / tot_value`
+        `Return - eta * Volatility - gamma * sum(weights**2) - delta * cash_value / tot_value`
 
         Args:
-            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
+            eta: float, the eta parameter to use (larger eta -> lower volatility)
             gamma: float, the gamma parameter to use (larger gamma -> more diversified portfolio)
             delta: float, the delta parameter to use (larger delta -> less cash in the portfolio)
             portfolio: Portfolio, the portfolio to evaluate
@@ -138,106 +138,106 @@ class PortfolioOptimizer:
             delta_term = 0
         return (
             portfolio_metrics["Return"]
-            - alpha * portfolio_metrics["Volatility"]  # large alpha -> low volatility
+            - eta * portfolio_metrics["Volatility"]  # large eta -> low volatility
             - gamma_term
             - delta_term
         )
 
     @staticmethod
-    def _prepare_exp_beta_schedule(
-        beta0: float,
-        beta1: float,
+    def _prepare_exp_theta_schedule(
+        theta0: float,
+        theta1: float,
         n_therm_steps: int,
-        n_betas: int,
-        n_step_per_beta: int,
+        n_thetas: int,
+        n_step_per_theta: int,
     ) -> np.ndarray:
         """
-        Prepare the beta schedule for the Metropolis algorithm.
+        Prepare the theta schedule for the Metropolis algorithm.
 
         Args:
-            beta0: float, the initial beta for the Simulated Annealing algorithm. It should be so that
-                `beta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
+            theta0: float, the initial theta for the Simulated Annealing algorithm. It should be so that
+                `theta0 * score_diff << 1` where `score_diff` is the difference between the scores of two
                 portfolios separated by a random move.
-            beta1: float, the final beta for the Simulated Annealing algorithm. It should be so that
-                `beta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
+            theta1: float, the final theta for the Simulated Annealing algorithm. It should be so that
+                `theta1 * score_diff >> 1` where `score_diff` is the difference between the scores of two
                 portfolios separated by a random move.
             n_therm_steps: int, the number of thermalization steps to use before starting the optimization
-            n_betas: int, the number of betas to use in the Simulated Annealing algorithm. Larger values
+            n_thetas: int, the number of thetas to use in the Simulated Annealing algorithm. Larger values
                 will make the algorithm more precise but slower.
-            n_steps_per_beta: int, the number of steps per beta to use in the Simulated Annealing algorithm.
+            n_steps_per_theta: int, the number of steps per theta to use in the Simulated Annealing algorithm.
                 Larger values will make the algorithm more precise but slower.
 
         Returns:
-            np.ndarray, the beta schedule to use in the Metropolis algorithm
+            np.ndarray, the theta schedule to use in the Metropolis algorithm
         """
-        schedule1 = np.full(n_therm_steps, beta0)
-        schedule2 = np.linspace(np.log(beta0), np.log(beta1), n_betas)
-        schedule2 = np.repeat(schedule2, n_step_per_beta)
+        schedule1 = np.full(n_therm_steps, theta0)
+        schedule2 = np.linspace(np.log(theta0), np.log(theta1), n_thetas)
+        schedule2 = np.repeat(schedule2, n_step_per_theta)
         schedule2 = np.exp(schedule2)
         return np.concatenate([schedule1, schedule2])
 
-    def _step(self, alpha: float, beta: float) -> None:
+    def _step(self, eta: float, theta: float) -> None:
         """
         Perform a step of the Metropolis algorithm.
         It results in potentially updating the `self._current_portfolio`
         and `self._current_score` attributes.
 
         Args:
-            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
-            beta: float, the beta parameter to use in the Metropolis algorithm
+            eta: float, the eta parameter to use (larger eta -> lower volatility)
+            theta: float, the theta parameter to use in the Metropolis algorithm
 
         """
         new_portfolio = self._current_portfolio.copy()
         new_portfolio.random_move()
         new_score = self._portfolio_minus_energy(
-            alpha, self.gamma, self.delta, new_portfolio, self.returns_df
+            eta, self.gamma, self.delta, new_portfolio, self.returns_df
         )
         if new_score > self._current_score:
             self._current_portfolio = new_portfolio
             self._current_score = new_score
-        elif self.rng.random() < np.exp(beta * (new_score - self._current_score)):
+        elif self.rng.random() < np.exp(theta * (new_score - self._current_score)):
             self._current_portfolio = new_portfolio
             self._current_score = new_score
         return
 
-    def run_fixed_alpha(self, alpha: float) -> None:
+    def run_fixed_eta(self, eta: float) -> None:
         """
-        Run the optimization process for a fixed alpha.
+        Run the optimization process for a fixed eta.
         It will store the best portfolio found in `self.best_portfolios`.
 
         Args:
-            alpha: float, the alpha parameter to use (larger alpha -> lower volatility)
+            eta: float, the eta parameter to use (larger eta -> lower volatility)
         """
         self._current_portfolio = self.initial_portfolio
         self._current_score = self._portfolio_minus_energy(
-            alpha, self.gamma, self.delta, self.initial_portfolio, self.returns_df
+            eta, self.gamma, self.delta, self.initial_portfolio, self.returns_df
         )
         best_portfolio = self._current_portfolio
         best_score = self._current_score
 
         # progress bar
-        # Use Any type for beta_schedule_iter to accommodate both tqdm and marimo progress bar
-        beta_schedule_iter: Any
+        # Use Any type for theta_schedule_iter to accommodate both tqdm and marimo progress bar
+        theta_schedule_iter: Any
         if mo.running_in_notebook():
-            beta_schedule_iter = mo.status.progress_bar(
-                self.beta_schedule,
+            theta_schedule_iter = mo.status.progress_bar(
+                self.theta_schedule,
                 title="Optimizing portfolio",
-                subtitle=f"with alpha = {alpha:.2e}",
+                subtitle=f"with eta = {eta:.2e}",
                 remove_on_exit=True,
             )
         else:
-            beta_schedule_iter = tqdm(
-                self.beta_schedule,
-                desc=f"Optimizing portfolio with alpha = {alpha:.2e}",
+            theta_schedule_iter = tqdm(
+                self.theta_schedule,
+                desc=f"Optimizing portfolio with eta = {eta:.2e}",
                 leave=False,
             )
 
-        for beta in beta_schedule_iter:
-            self._step(alpha, beta)
+        for theta in theta_schedule_iter:
+            self._step(eta, theta)
             if self._current_score > best_score:
                 best_portfolio = self._current_portfolio
                 best_score = self._current_score
-        best_portfolio.alpha = alpha
+        best_portfolio.eta = eta
         self.best_portfolios.append(best_portfolio)
         return
 
@@ -248,26 +248,26 @@ class PortfolioOptimizer:
         Run the full optimization process.
 
         Args:
-            callback: Optional function to call after each alpha optimization
+            callback: Optional function to call after each eta optimization
 
         Returns:
             The result of the callback if provided, otherwise None
         """
         # progress bar
-        # Use Any type for alpha_schedule_iter to accommodate both tqdm and marimo progress bar
-        alpha_schedule_iter: Any
+        # Use Any type for eta_schedule_iter to accommodate both tqdm and marimo progress bar
+        eta_schedule_iter: Any
         if mo.running_in_notebook():
-            alpha_schedule_iter = mo.status.progress_bar(
-                self.alpha_schedule, title="Collecting optimal portfolios"
+            eta_schedule_iter = mo.status.progress_bar(
+                self.eta_schedule, title="Collecting optimal portfolios"
             )
         else:
-            alpha_schedule_iter = tqdm(
-                self.alpha_schedule, desc="Collecting optimal portfolios"
+            eta_schedule_iter = tqdm(
+                self.eta_schedule, desc="Collecting optimal portfolios"
             )
 
         callback_res: Any = None
-        for alpha in alpha_schedule_iter:
-            self.run_fixed_alpha(alpha)
+        for eta in eta_schedule_iter:
+            self.run_fixed_eta(eta)
             if callback is not None:
                 callback_res = callback(self)
 

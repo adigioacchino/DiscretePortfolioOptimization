@@ -22,10 +22,10 @@ def get_small_po():
     _, defs = init_po.run()
     po = defs["po"]
     assert isinstance(po, dpo.PortfolioOptimizer)
-    # reduce the number of alphas for the test
-    po.alpha_schedule = po.alpha_schedule[:2]
-    # reduce the number of betas for the test
-    po.beta_schedule = po.beta_schedule[:1000]
+    # reduce the number of etas for the test
+    po.eta_schedule = po.eta_schedule[:2]
+    # reduce the number of thetas for the test
+    po.theta_schedule = po.theta_schedule[:1000]
     return po
 
 
@@ -100,7 +100,7 @@ def test_run_portfolio_opt(tmp_path):
     assert isinstance(outs, mo.ui.plotly)
     assert "opt_port_plot" in defs.keys()
     assert isinstance(defs["opt_port_plot"], mo.ui.plotly)
-    assert len(po.best_portfolios) == len(po.alpha_schedule)
+    assert len(po.best_portfolios) == len(po.eta_schedule)
 
     # force_recompute = False
     force_recompute = get_mock_button(value=False)
@@ -113,7 +113,7 @@ def test_run_portfolio_opt(tmp_path):
         load_results_from_temp_file=load_results_from_temp_file,
         save_results_to_temp_file=save_results_to_temp_file,
     )
-    assert len(po.best_portfolios) == len(po.alpha_schedule) * 2
+    assert len(po.best_portfolios) == len(po.eta_schedule) * 2
 
     # now run with user portfolios set
     _, yf_defs = yf_ui_fetch.run()

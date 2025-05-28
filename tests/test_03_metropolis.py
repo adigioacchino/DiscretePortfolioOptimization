@@ -29,40 +29,40 @@ def pft_closedf() -> tuple[Portfolio, pd.DataFrame]:
 @mark.dependency(depends=dep_tests, scope="session")
 def test_init_portfolio_optimizer(pft_closedf):
     pft, results_df = pft_closedf
-    t_n_alphas = 10
-    t_n_betas = 5_000
-    t_n_steps_per_beta = 2
+    t_n_etas = 10
+    t_n_thetas = 5_000
+    t_n_steps_per_theta = 2
     t_n_therm_steps = 1_000
-    t_beta0 = 1e-3
-    t_beta1 = 1
+    t_theta0 = 1e-3
+    t_theta1 = 1
     po = PortfolioOptimizer(
         pft,
         results_df,
-        n_alphas=t_n_alphas,
+        n_etas=t_n_etas,
         n_therm_steps=t_n_therm_steps,
-        beta0=t_beta0,
-        beta1=t_beta1,
-        n_betas=t_n_betas,
-        n_steps_per_beta=t_n_steps_per_beta,
+        theta0=t_theta0,
+        theta1=t_theta1,
+        n_thetas=t_n_thetas,
+        n_steps_per_theta=t_n_steps_per_theta,
     )
 
-    # test alpha and beta schedules
-    assert len(po.alpha_schedule) == t_n_alphas
-    assert len(po.beta_schedule) == t_n_therm_steps + t_n_betas * t_n_steps_per_beta
-    assert po.beta_schedule[0] == approx(t_beta0)
-    assert po.beta_schedule[t_n_therm_steps] == approx(t_beta0)
-    assert po.beta_schedule[-1] == approx(t_beta1)
-    assert len(np.unique(po.beta_schedule)) == t_n_betas + 1
+    # test eta and theta schedules
+    assert len(po.eta_schedule) == t_n_etas
+    assert len(po.theta_schedule) == t_n_therm_steps + t_n_thetas * t_n_steps_per_theta
+    assert po.theta_schedule[0] == approx(t_theta0)
+    assert po.theta_schedule[t_n_therm_steps] == approx(t_theta0)
+    assert po.theta_schedule[-1] == approx(t_theta1)
+    assert len(np.unique(po.theta_schedule)) == t_n_thetas + 1
 
 
 @mark.dependency(depends=dep_tests, scope="session")
 def test_portfolio_minus_energy(pft_closedf):
     pft, results_df = pft_closedf
-    alpha = 0.1
+    eta = 0.1
     gamma = 0.1
     delta = 0.1
     energy = PortfolioOptimizer._portfolio_minus_energy(
-        alpha, gamma, delta, pft, results_df
+        eta, gamma, delta, pft, results_df
     )
     assert isinstance(energy, float)
 
@@ -71,22 +71,22 @@ def test_portfolio_minus_energy(pft_closedf):
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
 def test_runs(pft_closedf):
     pft, results_df = pft_closedf
-    t_n_alphas = 3
-    t_n_betas = 1_000
-    t_n_steps_per_beta = 2
+    t_n_etas = 3
+    t_n_thetas = 1_000
+    t_n_steps_per_theta = 2
     t_n_therm_steps = 500
     po = PortfolioOptimizer(
         pft,
         results_df,
-        n_alphas=t_n_alphas,
+        n_etas=t_n_etas,
         n_therm_steps=t_n_therm_steps,
-        n_betas=t_n_betas,
-        n_steps_per_beta=t_n_steps_per_beta,
+        n_thetas=t_n_thetas,
+        n_steps_per_theta=t_n_steps_per_theta,
     )
 
     po.full_run()
 
-    assert len(po.best_portfolios) == t_n_alphas
+    assert len(po.best_portfolios) == t_n_etas
     assert all([isinstance(p, Portfolio) for p in po.best_portfolios])
     assert all([p.tot_value == approx(10_000) for p in po.best_portfolios])
     assert all([p.num_assets == 5 for p in po.best_portfolios])
@@ -103,19 +103,19 @@ def test_runs(pft_closedf):
 
 @mark.dependency(depends=dep_tests, scope="session")
 @pytest.mark.skipif(skip_long_tests, reason="skipping long tests")
-def test_runs_fixed_alpha_2(pft_closedf):
+def test_runs_fixed_eta_2(pft_closedf):
     pft, results_df = pft_closedf
     po = PortfolioOptimizer(
         pft,
         results_df,
         n_therm_steps=1_000,
-        n_betas=2_500,
-        n_steps_per_beta=2,
+        n_thetas=2_500,
+        n_steps_per_theta=2,
         gamma=0.0,
     )
 
-    # alpha = 0., gamma = 0., so should be composed of the asset with highest return almost exclusively
-    po.run_fixed_alpha(0.0)
+    # eta = 0., gamma = 0., so should be composed of the asset with highest return almost exclusively
+    po.run_fixed_eta(0.0)
     pft1 = po.best_portfolios[0]
     returns = results_df.mean()
     metrics0 = pft.portfolio_metrics(results_df)
@@ -126,8 +126,8 @@ def test_runs_fixed_alpha_2(pft_closedf):
     )  # will never be exactly 1 because of discrete nature of the assets
     assert metrics1["Return"] > metrics0["Return"]
 
-    # alpha = 100., gamma = 0., so should have less volatility than each individual asset
-    po.run_fixed_alpha(1e3)
+    # eta = 100., gamma = 0., so should have less volatility than each individual asset
+    po.run_fixed_eta(1e3)
     pft2 = po.best_portfolios[1]
     cov_matrix = results_df.cov()
     volatilities = np.diag(cov_matrix)
@@ -140,12 +140,12 @@ def test_runs_fixed_alpha_2(pft_closedf):
         pft,
         results_df,
         n_therm_steps=1_000,
-        n_betas=2_500,
-        n_steps_per_beta=2,
+        n_thetas=2_500,
+        n_steps_per_theta=2,
         gamma=100.0,
     )
 
-    po.run_fixed_alpha(1.0)
+    po.run_fixed_eta(1.0)
     pft3 = po.best_portfolios[0]
     assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft.weights)
     assert np.linalg.norm(pft3.weights) < np.linalg.norm(pft1.weights)
@@ -156,12 +156,12 @@ def test_runs_fixed_alpha_2(pft_closedf):
         pft,
         results_df,
         n_therm_steps=1_000,
-        n_betas=2_500,
-        n_steps_per_beta=2,
+        n_thetas=2_500,
+        n_steps_per_theta=2,
         delta=100.0,
     )
 
-    po.run_fixed_alpha(1.0)
+    po.run_fixed_eta(1.0)
     pft4 = po.best_portfolios[0]
     assert pft4.cash_value < pft.cash_value
     assert pft4.cash_value < pft1.cash_value

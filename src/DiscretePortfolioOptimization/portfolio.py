@@ -17,6 +17,10 @@ class Portfolio:
         seed: int, the seed for the random number generator
     """
 
+    current_prices: NDArray[np.floating]
+    allocations: NDArray[np.floating]
+    weights: NDArray[np.floating]
+
     def __init__(
         self,
         current_prices: Union[List[float], NDArray[np.floating]],
@@ -38,10 +42,9 @@ class Portfolio:
         """
         self.current_prices = np.array(current_prices, dtype=float)
         self.num_assets = len(current_prices)
-        self.alpha: Optional[float] = (
-            None  # alpha is not used in this class, but it is used in the optimization class
+        self.eta: Optional[float] = (
+            None  # eta is not used in this class, but it is used in the optimization class
         )
-        self.weights: np.ndarray
         self.asset_value: float
         self.tot_value: float
         self.cash_value: float
@@ -65,7 +68,7 @@ class Portfolio:
             self.allocations = self._random_allocations()
         elif tot_value is None and allocations is not None:
             self.allocations = np.array(allocations, dtype=float)
-            self.tot_value = self.current_prices @ self.allocations + cash_value
+            self.tot_value = float(self.current_prices @ self.allocations + cash_value)
 
         self._sync_values()  # self.asset_value, self.cash_value
         self._sync_weights()  # self.weights
@@ -74,7 +77,7 @@ class Portfolio:
         """
         Synchronize the asset and cash values with the current prices and allocations.
         """
-        self.asset_value = self.current_prices @ self.allocations
+        self.asset_value = float(self.current_prices @ self.allocations)
         self.cash_value = self.tot_value - self.asset_value
 
     def _sync_weights(self) -> None:
@@ -122,9 +125,9 @@ class Portfolio:
         largest_value = np.argmax([price1, price2])
         if largest_value == 0:
             num1 = 1
-            num2 = round(price1 / price2)
+            num2 = np.round(price1 / price2)
         else:
-            num1 = round(price2 / price1)
+            num1 = np.round(price2 / price1)
             num2 = 1
 
         # determine the direction of the move
@@ -204,9 +207,11 @@ class Portfolio:
         if account_for_cash:
             # cash has no volatility
             allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
-            return self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+            return float(
+                self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+            )
         else:
-            return self.weights.T @ np.sqrt(cov_matrix) @ self.weights
+            return float(self.weights.T @ np.sqrt(cov_matrix) @ self.weights)
 
     def get_sharpe(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
