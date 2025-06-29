@@ -1,3 +1,16 @@
 site_name: Discrete Portfolio Optimization
 theme:
   name: material
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: yes
+            show_source: yes
+nav:
+  - Home: index.md
+  - Metropolis: metropolis.md
+  - Portfolio: portfolio.md
+  - YFinance Download: yfinance_download.md
