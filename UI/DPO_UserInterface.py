@@ -1,8 +1,6 @@
-
-
 import marimo
 
-__generated_with = "0.13.2"
+__generated_with = "0.14.11"
 app = marimo.App(width="columns")
 
 with app.setup:
@@ -24,11 +22,11 @@ with app.setup:
 def _():
     mo.md(
         """
-        # Fetch data from Yahoo Finance
-        Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
+    # Fetch data from Yahoo Finance
+    Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
 
-        ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
-        """
+    ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
+    """
     )
     return
 
@@ -41,11 +39,18 @@ def yf_download_input():
     download_from_yf_button = mo.ui.run_button(
         label="Download data from Yahoo Finance",
     )
+
+    target_currency = mo.ui.dropdown(
+            options=["EUR", "USD", "JPY", 'CAD'],
+            value="USD",  # valore iniziale
+            label="Set target currency",
+        )
+
     mo.vstack(
-        [symbols_string, download_from_yf_button],
+        [symbols_string, download_from_yf_button, target_currency],
         #align="center",
     )
-    return download_from_yf_button, symbols_string
+    return download_from_yf_button, symbols_string, target_currency
 
 
 @app.cell
@@ -109,14 +114,14 @@ def _():
 
 @app.cell
 def _(
-    eta_slider,
-    theta_slider,
     delta_switch,
+    eta_slider,
     gamma_switch,
     n_etas,
-    n_thetas,
     n_steps_per_theta,
     n_therm_steps,
+    n_thetas,
+    theta_slider,
 ):
     _adv_settings = mo.accordion(
         {
@@ -247,31 +252,31 @@ def _(po_kwargs_defaults):
         show_value=True,
     )
     return (
-        eta_slider,
-        theta_slider,
         delta,
         delta_switch,
+        eta_slider,
         gamma,
         gamma_switch,
         n_etas,
-        n_thetas,
         n_steps_per_theta,
         n_therm_steps,
+        n_thetas,
+        theta_slider,
     )
 
 
 @app.cell
 def _(
-    eta_slider,
-    theta_slider,
     delta,
     delta_switch,
+    eta_slider,
     gamma,
     gamma_switch,
     n_etas,
-    n_thetas,
     n_steps_per_theta,
     n_therm_steps,
+    n_thetas,
+    theta_slider,
 ):
     # prepare kwarg for PortfolioOptimzer
     if gamma_switch.value:
@@ -324,11 +329,16 @@ def _(Portfolio, raw_user_portfolios, ticker_prices):
 
 
 @app.cell(column=1)
-def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
+def yf_ui_fetch(
+    download_from_yf_button,
+    get_close_price_df,
+    symbols_string,
+    target_currency,
+):
     # fetch data from Yahoo Finance
     mo.stop(not (download_from_yf_button.value or not mo.running_in_notebook()))
     _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
-        symbols_string.value, drop_missing_dates=False
+        symbols_string.value, drop_missing_dates=False, target_currency=target_currency.value
     )
 
     # Create a dictionary mapping tickers to status emojis
@@ -376,14 +386,16 @@ def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
 
 @app.cell
 def _(force_recompute, run_computation_button):
-    mo.md(f"""
+    mo.md(
+        f"""
     # Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
 
     {force_recompute}
-    """)
+    """
+    )
     return
 
 
@@ -529,6 +541,7 @@ def _(opt_port_plot, po, pure_portfolios, returns_df, user_portfolios):
 
     _out
     return
+
 
 
 @app.cell(column=2)
@@ -767,6 +780,7 @@ def _():
 
         return mo.ui.plotly(_plot)
     return (plot_portfolios,)
+
 
 
 if __name__ == "__main__":
