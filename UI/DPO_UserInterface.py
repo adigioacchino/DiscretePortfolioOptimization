@@ -20,9 +20,43 @@ with app.setup:
 
 @app.cell
 def _():
+    return
+
+
+@app.cell
+def _():
+    mo.md(
+        r"""
+    # Discrete Portfolio Optimization
+    This tools aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets. 
+
+    Given a set of assets $\{A_i\}_{i=1}^N$ , the algorithm seeks a portfolio $\{n_i\}_{i=1}^N$ (with $n_i$ the number of quotes to buy for the asset $i$) that maximise the following function: 
+
+    $$ \mathcal{L}\left(\{n_i\}\right) =  \sum_i w_i \bar{R}_i \ - \eta \sqrt{ \sum_{i,j}w_iw_j\Sigma_{ij}} -  \gamma  \sum_i w_i^2 - \delta \frac{\text{Cash}}{\text{Funds}} \,,$$
+
+    where:
+
+    - $\text{Funds}$ is the toal size of the investment
+    - $\text{Cash}$ is the part of the investment left in cash
+    - $w_i := n_i \frac {\text{PriceAsset}_i}{\text{Funds}}$ is the weight of the investment on the asset $i$
+    - $\bar{R}_i$ is the mean daily return of the asset $i$
+    - $\Sigma$ is the covariance matrix of the assets' daily returns
+
+    Overall, the algorithm aims at maximising the value of the daily return with the follwong penalties: 
+
+    - Portfolios with excessive volatilities are penalized ($\eta$-term)
+    - Portfolios excessively concentrated in one asset are penalized ($\gamma$-term)
+    - Portfolios with to much un-invested cash ($\delta$-term)
+    """
+    )
+    return
+
+
+@app.cell
+def _():
     mo.md(
         """
-    # Fetch data from Yahoo Finance
+    ## Fetch data from Yahoo Finance
     Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
 
     ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
@@ -543,7 +577,6 @@ def _(opt_port_plot, po, pure_portfolios, returns_df, user_portfolios):
     return
 
 
-
 @app.cell(column=2)
 def _():
     # import DPO
@@ -780,7 +813,6 @@ def _():
 
         return mo.ui.plotly(_plot)
     return (plot_portfolios,)
-
 
 
 if __name__ == "__main__":
