@@ -28,9 +28,9 @@ def _():
     mo.md(
         r"""
     # Discrete Portfolio Optimization
-    This tools aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets. 
+    This tools aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets.
 
-    Given a set of assets $\{A_i\}_{i=1}^N$ , the algorithm seeks a portfolio $\{n_i\}_{i=1}^N$ (with $n_i$ the number of quotes to buy for the asset $i$) that maximise the following function: 
+    Given a set of assets $\{A_i\}_{i=1}^N$ , the algorithm seeks a portfolio $\{n_i\}_{i=1}^N$ (with $n_i$ the number of quotes to buy for the asset $i$) that maximise the following function:
 
     $$ \mathcal{L}\left(\{n_i\}\right) =  \sum_i w_i \bar{R}_i \ - \eta \sqrt{ \sum_{i,j}w_iw_j\Sigma_{ij}} -  \gamma  \sum_i w_i^2 - \delta \frac{\text{Cash}}{\text{Funds}} \,,$$
 
@@ -42,7 +42,7 @@ def _():
     - $\bar{R}_i$ is the mean daily return of the asset $i$
     - $\Sigma$ is the covariance matrix of the assets' daily returns
 
-    Overall, the algorithm aims at maximising the value of the daily return with the follwong penalties: 
+    Overall, the algorithm aims at maximising the value of the daily return with the follwong penalties:
 
     - Portfolios with excessive volatilities are penalized ($\eta$-term)
     - Portfolios excessively concentrated in one asset are penalized ($\gamma$-term)
@@ -792,7 +792,7 @@ def _():
         _plot.add_trace(user_trace)
 
         # Improve plot aesthetics
-        _plot.update_layout(title="Portfolio Optimization: Return vs. Volatility")
+        _plot.update_layout(title="Portfolio Optimization: Return vs. Volatility [measured as %/day]")
 
         # Update trace properties for optimized portfolios for legend
         _plot.update_traces(
