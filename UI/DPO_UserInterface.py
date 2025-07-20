@@ -41,7 +41,7 @@ def yf_download_input():
     )
 
     target_currency = mo.ui.dropdown(
-            options=["EUR", "USD", "JPY", 'CAD'],
+            options=["USD", "EUR", "JPY", "GBP", "CAD", "CHF"],
             value="USD",  # valore iniziale
             label="Set target currency",
         )
