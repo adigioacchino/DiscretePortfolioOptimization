@@ -69,34 +69,46 @@ def test_get_close_price_df():
     assert close_price_df.index.min() < pd.Timestamp("2000-01-01")
 
     tickers = "AAPL, ABNB"
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=True, target_currency='EUR')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=True, target_currency="EUR"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() > pd.Timestamp("2020-01-01")
 
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=False, target_currency='EUR')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=False, target_currency="EUR"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() < pd.Timestamp("2012-01-01")
 
     tickers = "BPSO.MI, ENI.MI, ABNB"
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=True, target_currency='USD')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=True, target_currency="USD"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() > pd.Timestamp("2020-01-01")
 
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=False, target_currency='USD')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=False, target_currency="USD"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() < pd.Timestamp("2012-01-01")
 
     tickers = "BPSO.MI, ENI.MI, ABNB"
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=True, target_currency='EUR')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=True, target_currency="EUR"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() > pd.Timestamp("2020-01-01")
 
-    close_price_df, _, _ = get_close_price_df(tickers, drop_missing_dates=False, target_currency='EUR')
+    close_price_df, _, _ = get_close_price_df(
+        tickers, drop_missing_dates=False, target_currency="EUR"
+    )
     assert isinstance(close_price_df, pd.DataFrame)
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() < pd.Timestamp("2010-01-01")

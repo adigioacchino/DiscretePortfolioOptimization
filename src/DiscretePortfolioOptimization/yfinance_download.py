@@ -23,8 +23,7 @@ def download_close_price(ticker: str) -> pd.Series:
 
 
 def get_close_price_df(
-    tickers: str, drop_missing_dates: bool = True,
-    target_currency: str = "USD"
+    tickers: str, drop_missing_dates: bool = True, target_currency: str = "USD"
 ) -> Tuple[pd.DataFrame, List[str], List[str]]:
     """
     Download the close price of a list of stocks from Yahoo Finance.
@@ -77,8 +76,6 @@ def get_close_price_df(
         # convert data to target currency
         res_df = currency_conversion(res_df, target_currency=target_currency)
 
-    
-    
     return res_df, ticker_hits, ticker_misses
 
 
@@ -102,30 +99,31 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
     currency_conversion = {}
     forex_list = []
     for cur in all_currency_not_target:
-        if target_currency == 'USD':
-            fx_ticker = f'{cur}=X'
+        if target_currency == "USD":
+            fx_ticker = f"{cur}=X"
         else:
-            fx_ticker = f'{target_currency}{cur}=X'
+            fx_ticker = f"{target_currency}{cur}=X"
         forex_list.append(fx_ticker)
         currency_conversion[cur] = fx_ticker
 
     if len(forex_list) == 0:
         return data
     else:
-        fx_history = yf.Tickers(forex_list).history(period = 'max', auto_adjust=True,progress=False)['Close']
+        fx_history = yf.Tickers(forex_list).history(
+            period="max", auto_adjust=True, progress=False
+        )["Close"]
 
-        data_al, fx_al = data.align(fx_history, join = 'left', axis =0)
+        data_al, fx_al = data.align(fx_history, join="left", axis=0)
         fx_al = fx_al.ffill()
         # fx_history = fx_history.reindex(data.index).ffill().dropna()
 
         for col in data_al.columns:
-            reference_cur = currency_map[col] 
+            reference_cur = currency_map[col]
             if reference_cur != target_currency:
                 fx_col = currency_conversion[reference_cur]
-                data_al.loc[:,col] /=  fx_al.loc[:,fx_col]
+                data_al.loc[:, col] /= fx_al.loc[:, fx_col]
 
         return data_al
-
 
 
 # --- Helper function to detect currency of ticker ---
@@ -136,10 +134,10 @@ def get_ticker_currencies(ticker_list):
     for ticker in ticker_list:
         try:
             info = tickers_data.tickers[ticker].info
-            currency = info.get('currency', 'USD')  # Default fallback
+            currency = info.get("currency", "USD")  # Default fallback
             currency_map[ticker] = currency.upper()
         except Exception as e:
             print(f"⚠️ Could not get currency for {ticker}: {e}")
-            currency_map[ticker] = 'USD'  # Fallback or None if you prefer
+            currency_map[ticker] = "USD"  # Fallback or None if you prefer
 
     return currency_map

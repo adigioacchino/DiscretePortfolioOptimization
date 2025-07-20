@@ -208,12 +208,12 @@ class Portfolio:
             # cash has no volatility
             allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
             return float(
-                #self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+                # self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
                 np.sqrt(self.weights.T @ (cov_matrix) @ self.weights) * allocated_frac
             )
         else:
             # return float(self.weights.T @ np.sqrt(cov_matrix) @ self.weights)
-            return float(np.sqrt(self.weights.T @ (cov_matrix) @ self.weights) )
+            return float(np.sqrt(self.weights.T @ (cov_matrix) @ self.weights))
 
     def get_sharpe(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True
