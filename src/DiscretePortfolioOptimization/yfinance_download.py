@@ -114,9 +114,9 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
             period="max", auto_adjust=True, progress=False
         )["Close"]
 
+        # Align prices and forex, using forward fill for missing values
         data_al, fx_al = data.align(fx_history, join="left", axis=0)
         fx_al = fx_al.ffill()
-        # fx_history = fx_history.reindex(data.index).ffill().dropna()
 
         for col in data_al.columns:
             reference_cur = currency_map[col]
@@ -145,6 +145,6 @@ def _get_ticker_currencies(ticker_list: List[str]) -> dict[str, str]:
             currency_map[ticker] = currency.upper()
         except Exception as e:
             print(f"⚠️ Could not get currency for {ticker}: {e}")
-            currency_map[ticker] = "USD"  # Fallback or None if you prefer
+            currency_map[ticker] = "USD"  # Fallback to USD
 
     return currency_map
