@@ -31,6 +31,7 @@ def get_close_price_df(
     Args:
         tickers: str, a string of tickers separated by a comma
         drop_missing_dates: bool, if True, drop dates for which at least one ticker is missing
+        target_currency: str, the currency to convert the stock prices to (default is 'USD')
 
     Returns:
         pd.DataFrame, the close price of the stocks
@@ -91,7 +92,7 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
         pd.DataFrame, the stock prices converted to the specified currency
     """
     tickers = data.columns.tolist()
-    currency_map = get_ticker_currencies(tickers)
+    currency_map = _get_ticker_currencies(tickers)
 
     all_currency = list(set(list(currency_map.values())))
     all_currency_not_target = [c for c in all_currency if c != target_currency]
@@ -126,8 +127,14 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
         return data_al
 
 
-# --- Helper function to detect currency of ticker ---
-def get_ticker_currencies(ticker_list):
+def _get_ticker_currencies(ticker_list: List[str]) -> dict[str, str]:
+    """
+    Get the currency of each ticker in the list using Yahoo Finance.
+    Args:
+        ticker_list: List[str], a list of tickers
+    Returns:
+        dict[str, str], a dictionary mapping tickers to their currencies. In case of failure, it defaults to 'USD'.
+    """
     tickers_data = yf.Tickers(ticker_list)
     currency_map = {}
 

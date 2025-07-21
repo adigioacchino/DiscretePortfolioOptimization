@@ -208,11 +208,11 @@ class Portfolio:
             # cash has no volatility
             allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
             return float(
-                # self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+                # The volatily is calculated as the square root of the portfolio variance (w' * Sigma * w), where w is the vector of asset weights and Sigma is the covariance matrix of returns.
                 np.sqrt(self.weights.T @ (cov_matrix) @ self.weights) * allocated_frac
             )
         else:
-            # return float(self.weights.T @ np.sqrt(cov_matrix) @ self.weights)
+            # The volatily is calculated as the square root of the portfolio variance (w' * Sigma * w), where w is the vector of asset weights and Sigma is the covariance matrix of returns.
             return float(np.sqrt(self.weights.T @ (cov_matrix) @ self.weights))
 
     def get_sharpe(
