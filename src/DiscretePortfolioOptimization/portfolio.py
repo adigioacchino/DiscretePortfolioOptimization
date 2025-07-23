@@ -192,7 +192,8 @@ class Portfolio:
     ) -> float:
         """
         Compute the volatility of the portfolio for a day.
-        The volatility is computed as the weighted sum of the square root of the covariances of the assets.
+        The volatility is calculated as the square root of the portfolio variance (w' * Sigma * w),
+        where w is the vector of asset weights and Sigma is the covariance matrix of returns.
         If `account_for_cash` is True, the volatility is multiplied by the fraction of the total value
         that is allocated to assets.
 
@@ -208,10 +209,10 @@ class Portfolio:
             # cash has no volatility
             allocated_frac = (self.tot_value - self.cash_value) / self.tot_value
             return float(
-                self.weights.T @ np.sqrt(cov_matrix) @ self.weights * allocated_frac
+                np.sqrt(self.weights.T @ (cov_matrix) @ self.weights) * allocated_frac
             )
         else:
-            return float(self.weights.T @ np.sqrt(cov_matrix) @ self.weights)
+            return float(np.sqrt(self.weights.T @ (cov_matrix) @ self.weights))
 
     def get_sharpe(
         self, returns_df: pd.DataFrame, account_for_cash: bool = True

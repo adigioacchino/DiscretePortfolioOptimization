@@ -1,8 +1,6 @@
-
-
 import marimo
 
-__generated_with = "0.13.2"
+__generated_with = "0.14.11"
 app = marimo.App(width="columns")
 
 with app.setup:
@@ -23,12 +21,41 @@ with app.setup:
 @app.cell
 def _():
     mo.md(
-        """
-        # Fetch data from Yahoo Finance
-        Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
+        r"""
+    # Discrete Portfolio Optimization
+    This tool aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets.
 
-        ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
+    Given a set of assets $\{A_i\}_{i=1}^N$ , the algorithm seeks a portfolio $\{n_i\}_{i=1}^N$ (with $n_i$ the number of quotes to buy for the asset $i$) that maximises the following function:
+
+    $$ \mathcal{L}\left(\{n_i\}\right) =  \sum_i w_i \bar{R}_i \ - \eta \sqrt{ \sum_{i,j}w_iw_j\Sigma_{ij}} -  \gamma  \sum_i w_i^2 - \delta \frac{\text{Cash}}{\text{Funds}} \,,$$
+
+    where:
+
+    - $\text{Funds}$ is the total size of the investment
+    - $\text{Cash}$ is the part of the investment left in cash
+    - $w_i := n_i \frac {\text{PriceAsset}_i}{\text{Funds}}$ is the weight of the investment on the asset $i$
+    - $\bar{R}_i$ is the mean daily return of the asset $i$
+    - $\Sigma$ is the covariance matrix of the assets' daily returns
+
+    Overall, the algorithm aims at maximising the value of the daily return with the following penalties:
+
+    - Portfolios with excessive volatilities are penalized ($\eta$-term)
+    - Portfolios excessively concentrated in one asset are penalized ($\gamma$-term)
+    - Portfolios with to much un-invested cash are penalized ($\delta$-term)
+    """
+    )
+    return
+
+
+@app.cell
+def _():
+    mo.md(
         """
+    ## Fetch data from Yahoo Finance
+    Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
+
+    ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
+    """
     )
     return
 
@@ -41,11 +68,18 @@ def yf_download_input():
     download_from_yf_button = mo.ui.run_button(
         label="Download data from Yahoo Finance",
     )
+
+    target_currency = mo.ui.dropdown(
+            options=["USD", "EUR", "JPY", "GBP", "CAD", "CHF"],
+            value="USD",  # default
+            label="Set target currency",
+        )
+
     mo.vstack(
-        [symbols_string, download_from_yf_button],
+        [symbols_string, download_from_yf_button, target_currency],
         #align="center",
     )
-    return download_from_yf_button, symbols_string
+    return download_from_yf_button, symbols_string, target_currency
 
 
 @app.cell
@@ -109,14 +143,14 @@ def _():
 
 @app.cell
 def _(
-    eta_slider,
-    theta_slider,
     delta_switch,
+    eta_slider,
     gamma_switch,
     n_etas,
-    n_thetas,
     n_steps_per_theta,
     n_therm_steps,
+    n_thetas,
+    theta_slider,
 ):
     _adv_settings = mo.accordion(
         {
@@ -247,31 +281,31 @@ def _(po_kwargs_defaults):
         show_value=True,
     )
     return (
-        eta_slider,
-        theta_slider,
         delta,
         delta_switch,
+        eta_slider,
         gamma,
         gamma_switch,
         n_etas,
-        n_thetas,
         n_steps_per_theta,
         n_therm_steps,
+        n_thetas,
+        theta_slider,
     )
 
 
 @app.cell
 def _(
-    eta_slider,
-    theta_slider,
     delta,
     delta_switch,
+    eta_slider,
     gamma,
     gamma_switch,
     n_etas,
-    n_thetas,
     n_steps_per_theta,
     n_therm_steps,
+    n_thetas,
+    theta_slider,
 ):
     # prepare kwarg for PortfolioOptimzer
     if gamma_switch.value:
@@ -324,11 +358,16 @@ def _(Portfolio, raw_user_portfolios, ticker_prices):
 
 
 @app.cell(column=1)
-def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
+def yf_ui_fetch(
+    download_from_yf_button,
+    get_close_price_df,
+    symbols_string,
+    target_currency,
+):
     # fetch data from Yahoo Finance
     mo.stop(not (download_from_yf_button.value or not mo.running_in_notebook()))
     _close_df, _tickers_hit, _tickers_miss = get_close_price_df(
-        symbols_string.value, drop_missing_dates=False
+        symbols_string.value, drop_missing_dates=False, target_currency=target_currency.value
     )
 
     # Create a dictionary mapping tickers to status emojis
@@ -376,14 +415,16 @@ def yf_ui_fetch(download_from_yf_button, get_close_price_df, symbols_string):
 
 @app.cell
 def _(force_recompute, run_computation_button):
-    mo.md(f"""
+    mo.md(
+        f"""
     # Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
 
     {force_recompute}
-    """)
+    """
+    )
     return
 
 
@@ -746,7 +787,7 @@ def _():
         _plot.add_trace(user_trace)
 
         # Improve plot aesthetics
-        _plot.update_layout(title="Portfolio Optimization: Return vs. Volatility")
+        _plot.update_layout(title="Portfolio Optimization: Return vs. Volatility [measured as %/day]")
 
         # Update trace properties for optimized portfolios for legend
         _plot.update_traces(
