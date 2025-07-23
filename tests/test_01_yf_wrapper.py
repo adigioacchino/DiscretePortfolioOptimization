@@ -68,6 +68,9 @@ def test_get_close_price_df():
     assert close_price_df.index.name == "Date"
     assert close_price_df.index.min() < pd.Timestamp("2000-01-01")
 
+
+@mark.dependency()
+def test_change_currency():
     # Consistency check when target currency is defined to USD or not (should be the same)
     tickers = "AAPL, ABNB"
     close_price_df_1, _, _ = get_close_price_df(
@@ -116,7 +119,7 @@ def test_get_close_price_df():
         "The price in EUR should be lower than in USD for the first 6 months of 2025 (BPSO.MI, ENI.MI tickers)"
     )
 
-    # Assertting data coverage when currency is changed
+    # Asserting data coverage when currency is changed
     tickers = "AAPL, ABNB"
     close_price_df, _, _ = get_close_price_df(
         tickers, drop_missing_dates=True, target_currency="EUR"
