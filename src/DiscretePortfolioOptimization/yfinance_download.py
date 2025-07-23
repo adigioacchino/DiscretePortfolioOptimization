@@ -94,7 +94,7 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
     tickers = data.columns.tolist()
     currency_map = _get_ticker_currencies(tickers)
 
-    all_currency = list(set(list(currency_map.values())))
+    all_currency = list(set(currency_map.values()))
     all_currency_not_target = [c for c in all_currency if c != target_currency]
 
     currency_conversion = {}
