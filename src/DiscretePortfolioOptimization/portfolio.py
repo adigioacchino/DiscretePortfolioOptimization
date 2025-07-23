@@ -192,7 +192,8 @@ class Portfolio:
     ) -> float:
         """
         Compute the volatility of the portfolio for a day.
-        The volatily is calculated as the square root of the portfolio variance (w' * Sigma * w), where w is the vector of asset weights and Sigma is the covariance matrix of returns.
+        The volatility is calculated as the square root of the portfolio variance (w' * Sigma * w),
+        where w is the vector of asset weights and Sigma is the covariance matrix of returns.
         If `account_for_cash` is True, the volatility is multiplied by the fraction of the total value
         that is allocated to assets.
 
