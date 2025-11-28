@@ -11,8 +11,5 @@ coverage.*
 # vscode settings
 .vscode/
 
-# uv lock
-uv.lock
-
 # marimo settings
 .marimo.toml
