@@ -11,5 +11,6 @@ coverage.*
 # vscode settings
 .vscode/
 
-# marimo settings
+# marimo files
 .marimo.toml
+__marimo__/

@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.14.11"
+__generated_with = "0.18.1"
 app = marimo.App(width="columns")
 
 with app.setup:
@@ -49,14 +49,12 @@ def _():
 
 @app.cell
 def _():
-    mo.md(
-        """
-    ## Fetch data from Yahoo Finance
+    mo.md("""
+    # Fetch data from Yahoo Finance
     Use the text box on the left to enter comma-separated symbols names (you can check them on [Yahoo Finance](https://finance.yahoo.com/)).
 
     ⚠️ Symbols that are not found will be marked with a ❌ and not used in the portfolio optimization.
-    """
-    )
+    """)
     return
 
 
@@ -84,7 +82,9 @@ def yf_download_input():
 
 @app.cell
 def _():
-    mo.md("""# Settings for optimization""")
+    mo.md("""
+    # Settings for optimization
+    """)
     return
 
 
@@ -145,10 +145,13 @@ def _():
 def _(
     delta_switch,
     eta_slider,
+    eta_slider,
     gamma_switch,
     n_etas,
     n_steps_per_theta,
     n_therm_steps,
+    n_thetas,
+    theta_slider,
     n_thetas,
     theta_slider,
 ):
@@ -284,11 +287,14 @@ def _(po_kwargs_defaults):
         delta,
         delta_switch,
         eta_slider,
+        eta_slider,
         gamma,
         gamma_switch,
         n_etas,
         n_steps_per_theta,
         n_therm_steps,
+        n_thetas,
+        theta_slider,
         n_thetas,
         theta_slider,
     )
