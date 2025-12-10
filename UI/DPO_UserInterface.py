@@ -20,8 +20,7 @@ with app.setup:
 
 @app.cell
 def _():
-    mo.md(
-        r"""
+    mo.md(r"""
     # Discrete Portfolio Optimization
     This tool aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets.
 
@@ -42,8 +41,7 @@ def _():
     - Portfolios with excessive volatilities are penalized ($\eta$-term)
     - Portfolios excessively concentrated in one asset are penalized ($\gamma$-term)
     - Portfolios with to much un-invested cash are penalized ($\delta$-term)
-    """
-    )
+    """)
     return
 
 
@@ -145,13 +143,10 @@ def _():
 def _(
     delta_switch,
     eta_slider,
-    eta_slider,
     gamma_switch,
     n_etas,
     n_steps_per_theta,
     n_therm_steps,
-    n_thetas,
-    theta_slider,
     n_thetas,
     theta_slider,
 ):
@@ -287,14 +282,11 @@ def _(po_kwargs_defaults):
         delta,
         delta_switch,
         eta_slider,
-        eta_slider,
         gamma,
         gamma_switch,
         n_etas,
         n_steps_per_theta,
         n_therm_steps,
-        n_thetas,
-        theta_slider,
         n_thetas,
         theta_slider,
     )
@@ -421,16 +413,14 @@ def yf_ui_fetch(
 
 @app.cell
 def _(force_recompute, run_computation_button):
-    mo.md(
-        f"""
+    mo.md(f"""
     # Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
 
     {force_recompute}
-    """
-    )
+    """)
     return
 
 
