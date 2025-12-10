@@ -333,9 +333,7 @@ def _(
 @app.cell
 def _(returns_df):
     _df = pd.DataFrame(columns=returns_df.columns, dtype=int)
-    raw_user_portfolios = mo.ui.data_editor(
-        _df, page_size=10, column_sizing_mode="fit"
-    )
+    raw_user_portfolios = mo.ui.data_editor(_df)
     _txt = "### Add your portfolios here to see them in the final plot"
     mo.accordion({_txt: raw_user_portfolios})
     return (raw_user_portfolios,)
