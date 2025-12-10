@@ -17,9 +17,42 @@ In essence, this package provides a more realistic and practical approach to por
 
 ### Main idea and equation
 
+The core idea of this package is to optimize a portfolio of assets where the holdings must be integers (discrete shares).
+This is a non-convex optimization problem, which is solved here using the [Simulated Annealing](https://en.wikipedia.org/wiki/Simulated_annealing) algorithm.
+
+The algorithm explores the space of possible portfolios by making random moves (swapping assets) and accepting or rejecting these moves based on a probability that depends on the change in the portfolio's "score" and a "temperature" parameter ($\theta$).
+
+The objective function (Score) being maximized is defined as:
+
+$$
+\text{Score} = \text{Return} - \eta \cdot \text{Volatility} - \gamma \sum w_i^2 - \delta \frac{\text{Cash}}{\text{Total Value}}
+$$
+
+Where:
+
+- **Return**: Expected daily return of the portfolio.
+- **Volatility**: Expected daily volatility (risk) of the portfolio.
+- **$\eta$ (eta)**: Risk aversion parameter. Larger $\eta$ leads to lower volatility portfolios.
+- **$\gamma$ (gamma)**: Diversification parameter. Larger $\gamma$ penalizes concentrated portfolios (high sum of squared weights), encouraging diversification.
+- **$\delta$ (delta)**: Cash penalty parameter. Larger $\delta$ penalizes holding cash, encouraging full investment.
+- **$w_i$**: Weight of asset $i$ in the portfolio.
+
+The algorithm runs for a sequence of decreasing temperatures (simulating the cooling process in annealing), allowing it to escape local optima initially and then settle into a global optimum.
 
 ### How to use the frontend
 
+The package includes a web-based user interface built with [marimo](https://marimo.io/).
+To launch the frontend, run the following command in your terminal:
+
+```bash
+uv run marimo edit UI/DPO_UserInterface.py
+```
+
+This will open a browser window where you can:
+
+1. Enter stock symbols to download data from Yahoo Finance.
+2. Configure optimization parameters (total value, risk aversion $\eta$, etc.).
+3. Run the optimization and visualize the results (efficient frontier, portfolio composition, etc.).
 
 ## How to contribute
 
