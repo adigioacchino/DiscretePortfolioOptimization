@@ -1,9 +1,7 @@
 name: Check pre-commits, then test package
 
-
 on:
   push
-
 
 jobs:
   # This job runs pre-commit hooks on all files in the repository
@@ -60,3 +58,27 @@ jobs:
           valColorRange: ${{ env.coverage }}
           maxColorRange: 100
           minColorRange: 0
+
+  # This job builds and deploys the documentation
+  docs:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install documentation dependencies
+        run: uv install .
+
+      - name: Build and deploy documentation
+        run: uv run mkdocs gh-deploy --force

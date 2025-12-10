@@ -1,0 +1,3 @@
+# Metropolis
+
+::: DiscretePortfolioOptimization.metropolis
