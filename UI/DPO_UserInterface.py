@@ -521,7 +521,7 @@ def run_portfolio_opt(
     # Save just the portfolios, not the UI element
     save_results_to_temp_file(po.best_portfolios)
 
-    mo.output.replace(opt_port_plot)
+    opt_port_plot
     return (opt_port_plot,)
 
 
