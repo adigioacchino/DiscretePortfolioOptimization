@@ -128,7 +128,7 @@ class PortfolioOptimizer:
         portfolio_metrics = portfolio.portfolio_metrics(returns_df)
         if gamma != 0:
             # large gamma -> diversified portfolio
-            gamma_term = gamma * np.sum(portfolio.weights**2)
+            gamma_term = gamma * float(np.sum(portfolio.weights**2))
         else:
             gamma_term = 0
         if delta != 0:

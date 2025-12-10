@@ -463,7 +463,7 @@ def _():
     num_assets_plot = mo.ui.number(
         start=1, stop=10, label="Number of top assets to show in plot: ", value=5
     )
-    num_assets_plot
+    mo.output.append(num_assets_plot)
     return (num_assets_plot,)
 
 
@@ -523,7 +523,7 @@ def run_portfolio_opt(
     # Save just the portfolios, not the UI element
     save_results_to_temp_file(po.best_portfolios)
 
-    opt_port_plot
+    mo.output.replace(opt_port_plot)
     return (opt_port_plot,)
 
 
@@ -564,7 +564,7 @@ def _(opt_port_plot, po, pure_portfolios, returns_df, user_portfolios):
     else:
         _out = mo.md("Select portfolios to see details.")
 
-    _out
+    mo.output.append(_out)
     return
 
 
@@ -755,7 +755,7 @@ def _():
             labels={"LogEta": "Log10(Eta)"},  # Add label for color bar
         )
         # Add pure portfolios as orange markers
-        pure_trace = px.scatter(
+        _pure_fig = px.scatter(
             pure_df,
             x="Volatility",
             y="Return",
@@ -766,20 +766,20 @@ def _():
                 "Index": True,
                 "Asset": True,
             },
-        ).data[0]
-        pure_trace.marker.color = "orange"
-        pure_trace.marker.symbol = "x"
+        )
+        _pure_fig.update_traces(marker=dict(color="orange", symbol="x"))
+        pure_trace = _pure_fig.data[0]
         _plot.add_trace(pure_trace)
 
         # Add user portfolios as red markers
-        user_trace = px.scatter(
+        _user_fig = px.scatter(
             user_df,
             x="Volatility",
             y="Return",
             hover_data=user_hover_data,
-        ).data[0]
-        user_trace.marker.color = "red"
-        user_trace.marker.symbol = "diamond"
+        )
+        _user_fig.update_traces(marker=dict(color="red", symbol="diamond"))
+        user_trace = _user_fig.data[0]
         _plot.add_trace(user_trace)
 
         # Improve plot aesthetics
