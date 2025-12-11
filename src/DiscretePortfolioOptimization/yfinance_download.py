@@ -19,7 +19,10 @@ def download_close_price(ticker: str) -> pd.Series:
     # cast ticker to upper case
     ticker = ticker.upper()
     data = yf.download(ticker, period="max", progress=False, auto_adjust=True)
-    return data["Close"][ticker]
+    if (data is None) or (data.empty):
+        raise ValueError(f"No data found for ticker {ticker}")
+    else:
+        return data["Close"][ticker]
 
 
 def get_close_price_df(
@@ -112,10 +115,13 @@ def currency_conversion(data: pd.DataFrame, target_currency: str) -> pd.DataFram
     else:
         fx_history = yf.Tickers(forex_list).history(
             period="max", auto_adjust=True, progress=False
-        )["Close"]
+        )
+        if (fx_history is None) or (fx_history.empty):
+            raise ValueError("No forex data found for currency conversion")
+        fx_hist_close = fx_history["Close"]
 
         # Align prices and forex, using forward fill for missing values
-        data_al, fx_al = data.align(fx_history, join="left", axis=0)
+        data_al, fx_al = data.align(fx_hist_close, join="left", axis=0)
         fx_al = fx_al.ffill()
 
         for col in data_al.columns:

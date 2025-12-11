@@ -20,8 +20,7 @@ with app.setup:
 
 @app.cell
 def _():
-    mo.md(
-        r"""
+    mo.md(r"""
     # Discrete Portfolio Optimization
     This tool aims at finding the **efficient risk/return frontier** of the ensemble of possible portfolios associated with a basket of assets.
 
@@ -42,8 +41,7 @@ def _():
     - Portfolios with excessive volatilities are penalized ($\eta$-term)
     - Portfolios excessively concentrated in one asset are penalized ($\gamma$-term)
     - Portfolios with to much un-invested cash are penalized ($\delta$-term)
-    """
-    )
+    """)
     return
 
 
@@ -145,13 +143,10 @@ def _():
 def _(
     delta_switch,
     eta_slider,
-    eta_slider,
     gamma_switch,
     n_etas,
     n_steps_per_theta,
     n_therm_steps,
-    n_thetas,
-    theta_slider,
     n_thetas,
     theta_slider,
 ):
@@ -287,14 +282,11 @@ def _(po_kwargs_defaults):
         delta,
         delta_switch,
         eta_slider,
-        eta_slider,
         gamma,
         gamma_switch,
         n_etas,
         n_steps_per_theta,
         n_therm_steps,
-        n_thetas,
-        theta_slider,
         n_thetas,
         theta_slider,
     )
@@ -341,9 +333,7 @@ def _(
 @app.cell
 def _(returns_df):
     _df = pd.DataFrame(columns=returns_df.columns, dtype=int)
-    raw_user_portfolios = mo.ui.data_editor(
-        _df, page_size=10, column_sizing_mode="fit"
-    )
+    raw_user_portfolios = mo.ui.data_editor(_df)
     _txt = "### Add your portfolios here to see them in the final plot"
     mo.accordion({_txt: raw_user_portfolios})
     return (raw_user_portfolios,)
@@ -421,16 +411,14 @@ def yf_ui_fetch(
 
 @app.cell
 def _(force_recompute, run_computation_button):
-    mo.md(
-        f"""
+    mo.md(f"""
     # Run computation
     After deciding the parameters, press this button to start the computation:
 
     {run_computation_button}
 
     {force_recompute}
-    """
-    )
+    """)
     return
 
 
@@ -473,7 +461,7 @@ def _():
     num_assets_plot = mo.ui.number(
         start=1, stop=10, label="Number of top assets to show in plot: ", value=5
     )
-    num_assets_plot
+    mo.output.append(num_assets_plot)
     return (num_assets_plot,)
 
 
@@ -574,7 +562,7 @@ def _(opt_port_plot, po, pure_portfolios, returns_df, user_portfolios):
     else:
         _out = mo.md("Select portfolios to see details.")
 
-    _out
+    mo.output.append(_out)
     return
 
 
@@ -765,7 +753,7 @@ def _():
             labels={"LogEta": "Log10(Eta)"},  # Add label for color bar
         )
         # Add pure portfolios as orange markers
-        pure_trace = px.scatter(
+        _pure_fig = px.scatter(
             pure_df,
             x="Volatility",
             y="Return",
@@ -776,20 +764,20 @@ def _():
                 "Index": True,
                 "Asset": True,
             },
-        ).data[0]
-        pure_trace.marker.color = "orange"
-        pure_trace.marker.symbol = "x"
+        )
+        _pure_fig.update_traces(marker=dict(color="orange", symbol="x"))
+        pure_trace = _pure_fig.data[0]
         _plot.add_trace(pure_trace)
 
         # Add user portfolios as red markers
-        user_trace = px.scatter(
+        _user_fig = px.scatter(
             user_df,
             x="Volatility",
             y="Return",
             hover_data=user_hover_data,
-        ).data[0]
-        user_trace.marker.color = "red"
-        user_trace.marker.symbol = "diamond"
+        )
+        _user_fig.update_traces(marker=dict(color="red", symbol="diamond"))
+        user_trace = _user_fig.data[0]
         _plot.add_trace(user_trace)
 
         # Improve plot aesthetics
