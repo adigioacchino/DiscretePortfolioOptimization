@@ -77,8 +77,5 @@ jobs:
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      - name: Install documentation dependencies
-        run: uv install .
-
       - name: Build and deploy documentation
         run: uv run mkdocs gh-deploy --force
