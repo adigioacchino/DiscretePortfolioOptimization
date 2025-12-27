@@ -14,3 +14,6 @@ coverage.*
 # marimo files
 .marimo.toml
 __marimo__/
+
+# my notes
+notes.md
