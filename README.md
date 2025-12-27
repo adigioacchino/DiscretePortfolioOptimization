@@ -10,6 +10,12 @@ To run the UI, you need to install the package and its dependencies. The suggest
 
 Assuming nothing is installed, you can follow [the official instructions](https://docs.astral.sh/uv/getting-started/installation/) to install `uv` and run the UI.
 
+Then, run the following command to start the UI:
+
+```bash
+uv run marimo run UI/DPO_UserInterface.py
+```
+
 ## Contribute
 
 ## Prepare the local environment
