@@ -1,0 +1,2330 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../metropolis/">
+      
+      
+        <link rel="next" href="../yfinance_download/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Portfolio - Discrete Portfolio Optimization</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#portfolio" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Discrete Portfolio Optimization" class="md-header__button md-logo" aria-label="Discrete Portfolio Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Discrete Portfolio Optimization
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Portfolio
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Discrete Portfolio Optimization" class="md-nav__button md-logo" aria-label="Discrete Portfolio Optimization" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Discrete Portfolio Optimization
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metropolis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metropolis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portfolio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        portfolio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Portfolio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_day_return" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_day_return
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_day_volatility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_day_volatility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_sharpe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_sharpe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.portfolio_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        portfolio_metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.random_move" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        random_move
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../yfinance_download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    YFinance Download
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        portfolio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Portfolio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Portfolio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        copy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_day_return" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_day_return
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_day_volatility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_day_volatility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.get_sharpe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_sharpe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.portfolio_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        portfolio_metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#DiscretePortfolioOptimization.portfolio.Portfolio.random_move" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        random_move
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="portfolio">Portfolio</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="DiscretePortfolioOptimization.portfolio" class="doc doc-heading">
+            <code>DiscretePortfolioOptimization.portfolio</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="DiscretePortfolioOptimization.portfolio.Portfolio" class="doc doc-heading">
+            <code>Portfolio</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Class to represent a portfolio of assets.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="DiscretePortfolioOptimization.portfolio.Portfolio.current_prices">current_prices</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.floating">floating</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[float], the current prices of the assets</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="DiscretePortfolioOptimization.portfolio.Portfolio.tot_value">tot_value</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the total value of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="DiscretePortfolioOptimization.portfolio.Portfolio.allocations">allocations</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.floating">floating</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[float], the number of shares of each asset</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="DiscretePortfolioOptimization.portfolio.Portfolio.cash_value">cash_value</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the cash value of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="DiscretePortfolioOptimization.portfolio.Portfolio.seed">seed</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>int, the seed for the random number generator</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Portfolio</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to represent a portfolio of assets.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        current_prices: list[float], the current prices of the assets</span>
+<span class="sd">        tot_value: float, the total value of the portfolio</span>
+<span class="sd">        allocations: list[float], the number of shares of each asset</span>
+<span class="sd">        cash_value: float, the cash value of the portfolio</span>
+<span class="sd">        seed: int, the seed for the random number generator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">current_prices</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+    <span class="n">allocations</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">current_prices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]],</span>
+        <span class="n">tot_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">allocations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cash_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the Portfolio object using either the total value of the portfolio</span>
+<span class="sd">        (and random allocations) or each allocation (the total value will be computed).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            current_prices: list[float], the current prices of the assets</span>
+<span class="sd">            tot_value: float, the total value of the portfolio</span>
+<span class="sd">            allocations: list[float], the number of shares of each asset</span>
+<span class="sd">            cash_value: float, the cash value of the portfolio</span>
+<span class="sd">            seed: int, the seed for the random number generator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">current_prices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_prices</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span>  <span class="c1"># eta is not used in this class, but it is used in the optimization class</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span><span class="p">:</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span><span class="p">:</span> <span class="nb">float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">:</span> <span class="nb">float</span>
+
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">allocations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tot_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Refusing to create a portfolio with both allocations and total value.&quot;</span>
+                <span class="s2">&quot;Provide allocations only and the total value will be computed.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">allocations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tot_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot create a portfolio without `allocations` or (`tot_value`).&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">allocations</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tot_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">=</span> <span class="n">tot_value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_random_allocations</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">tot_value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allocations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">allocations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">+</span> <span class="n">cash_value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_values</span><span class="p">()</span>  <span class="c1"># self.asset_value, self.cash_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_weights</span><span class="p">()</span>  <span class="c1"># self.weights</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sync_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Synchronize the asset and cash values with the current prices and allocations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sync_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Synchronize the weights with the current prices and allocations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_random_allocations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate random allocations for the assets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">curr_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">allocations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span><span class="p">)]</span>
+        <span class="n">available_poss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">t_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span>
+            <span class="n">t_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">t_pos</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">curr_value</span> <span class="o">+</span> <span class="n">t_value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span><span class="p">:</span>
+                <span class="n">curr_value</span> <span class="o">=</span> <span class="n">curr_value</span> <span class="o">+</span> <span class="n">t_value</span>
+                <span class="n">allocations</span><span class="p">[</span><span class="n">t_pos</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">available_poss</span> <span class="o">=</span> <span class="n">available_poss</span><span class="p">[</span><span class="n">available_poss</span> <span class="o">!=</span> <span class="n">t_pos</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">allocations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">random_move</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a random move in the portfolio changing the allocations of two assets.</span>
+<span class="sd">        The two assets are chosen randomly and the move is the smallest possible in terms of value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># determine two random assets</span>
+        <span class="n">available_poss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span><span class="p">)</span>
+        <span class="n">pos1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span>
+        <span class="n">price1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span>
+        <span class="n">available_poss</span> <span class="o">=</span> <span class="n">available_poss</span><span class="p">[</span><span class="n">available_poss</span> <span class="o">!=</span> <span class="n">pos1</span><span class="p">]</span>
+        <span class="n">pos2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span>
+        <span class="n">price2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span>
+
+        <span class="c1"># find smallest (in term of size) move</span>
+        <span class="n">largest_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">([</span><span class="n">price1</span><span class="p">,</span> <span class="n">price2</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">largest_value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">num1</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">num2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">price1</span> <span class="o">/</span> <span class="n">price2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">price2</span> <span class="o">/</span> <span class="n">price1</span><span class="p">)</span>
+            <span class="n">num2</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># determine the direction of the move</span>
+        <span class="n">first_2_second</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+        <span class="n">move_done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">first_2_second</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num2</span>
+                <span class="n">move_done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num2</span>
+                <span class="n">move_done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">move_done</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first_2_second</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">((</span><span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">((</span><span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+                <span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_values</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_weights</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_day_return</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the return of the portfolio for a day.</span>
+<span class="sd">        If `account_for_cash` is True, the return is multiplied by the fraction of the total value</span>
+<span class="sd">        that is allocated to assets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">            account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float, the return of the portfolio</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">account_for_cash</span><span class="p">:</span>
+            <span class="c1"># cash has no return</span>
+            <span class="n">allocated_frac</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">returns_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">*</span> <span class="n">allocated_frac</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">returns_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_day_volatility</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the volatility of the portfolio for a day.</span>
+<span class="sd">        The volatility is calculated as the square root of the portfolio variance (w&#39; * Sigma * w),</span>
+<span class="sd">        where w is the vector of asset weights and Sigma is the covariance matrix of returns.</span>
+<span class="sd">        If `account_for_cash` is True, the volatility is multiplied by the fraction of the total value</span>
+<span class="sd">        that is allocated to assets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">            account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float, the volatility of the portfolio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cov_matrix</span> <span class="o">=</span> <span class="n">returns_df</span><span class="o">.</span><span class="n">cov</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">account_for_cash</span><span class="p">:</span>
+            <span class="c1"># cash has no volatility</span>
+            <span class="n">allocated_frac</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">cov_matrix</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">*</span> <span class="n">allocated_frac</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">cov_matrix</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sharpe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Sharpe ratio of the portfolio.</span>
+<span class="sd">        If `account_for_cash` is True, the Sharpe ratio is computed using the fraction of the total value</span>
+<span class="sd">        that is allocated to assets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">            account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float, the Sharpe ratio of the portfolio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">yret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_return</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+        <span class="n">ycov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_volatility</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yret</span> <span class="o">/</span> <span class="n">ycov</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">portfolio_metrics</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the return, volatility, and Sharpe ratio of the portfolio.</span>
+<span class="sd">        If `account_for_cash` is True, the metrics are computed using the fraction of the total value</span>
+<span class="sd">        that is allocated to assets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">            account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict, a dictionary with the return, volatility, and Sharpe ratio of the portfolio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_return</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+        <span class="n">vol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_volatility</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;Return&quot;</span><span class="p">:</span> <span class="n">ret</span><span class="p">,</span>
+            <span class="s2">&quot;Volatility&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="p">,</span>
+            <span class="s2">&quot;Sharpe Ratio&quot;</span><span class="p">:</span> <span class="n">ret</span> <span class="o">/</span> <span class="n">vol</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Portfolio&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a copy of the Portfolio object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Convert numpy arrays to lists and explicitly cast them for type safety</span>
+        <span class="c1"># current_prices_list: List[float] = [float(x) for x in self.current_prices]</span>
+        <span class="c1"># allocations_list: List[float] = [float(x) for x in self.allocations]</span>
+
+        <span class="k">return</span> <span class="n">Portfolio</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Portfolio with total value of </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span><span class="p">),</span><span class="w"> </span><span class="n">ndigits</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; (of which </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span><span class="p">,</span><span class="w"> </span><span class="n">ndigits</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> in assets and </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">,</span><span class="w"> </span><span class="n">ndigits</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> cash)&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; and allocations </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">current_prices</span><span class="p">,</span> <span class="n">tot_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allocations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cash_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the Portfolio object using either the total value of the portfolio
+(and random allocations) or each allocation (the total value will be computed).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>current_prices</code>
+            </td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="typing.List">List</span>[<span title="float">float</span>], <span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.floating">floating</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[float], the current prices of the assets</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tot_value</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the total value of the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>allocations</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="typing.List">List</span>[<span title="float">float</span>], <span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.floating">floating</span>]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[float], the number of shares of each asset</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cash_value</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the cash value of the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>seed</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>int, the seed for the random number generator</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">current_prices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]],</span>
+    <span class="n">tot_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">allocations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cash_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the Portfolio object using either the total value of the portfolio</span>
+<span class="sd">    (and random allocations) or each allocation (the total value will be computed).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        current_prices: list[float], the current prices of the assets</span>
+<span class="sd">        tot_value: float, the total value of the portfolio</span>
+<span class="sd">        allocations: list[float], the number of shares of each asset</span>
+<span class="sd">        cash_value: float, the cash value of the portfolio</span>
+<span class="sd">        seed: int, the seed for the random number generator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">current_prices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_prices</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="kc">None</span>  <span class="c1"># eta is not used in this class, but it is used in the optimization class</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">allocations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tot_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;Refusing to create a portfolio with both allocations and total value.&quot;</span>
+            <span class="s2">&quot;Provide allocations only and the total value will be computed.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">allocations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tot_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot create a portfolio without `allocations` or (`tot_value`).&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">allocations</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tot_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">=</span> <span class="n">tot_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_random_allocations</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">tot_value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allocations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">allocations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span> <span class="o">+</span> <span class="n">cash_value</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_values</span><span class="p">()</span>  <span class="c1"># self.asset_value, self.cash_value</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_weights</span><span class="p">()</span>  <span class="c1"># self.weights</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.copy" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">copy</span><span class="p">()</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return a copy of the Portfolio object.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Portfolio&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a copy of the Portfolio object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert numpy arrays to lists and explicitly cast them for type safety</span>
+    <span class="c1"># current_prices_list: List[float] = [float(x) for x in self.current_prices]</span>
+    <span class="c1"># allocations_list: List[float] = [float(x) for x in self.allocations]</span>
+
+    <span class="k">return</span> <span class="n">Portfolio</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.get_day_return" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_day_return</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the return of the portfolio for a day.
+If <code>account_for_cash</code> is True, the return is multiplied by the fraction of the total value
+that is allocated to assets.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>returns_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame, the returns of the assets</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>account_for_cash</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>bool, whether to account for the cash in the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the return of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_day_return</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the return of the portfolio for a day.</span>
+<span class="sd">    If `account_for_cash` is True, the return is multiplied by the fraction of the total value</span>
+<span class="sd">    that is allocated to assets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">        account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float, the return of the portfolio</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">account_for_cash</span><span class="p">:</span>
+        <span class="c1"># cash has no return</span>
+        <span class="n">allocated_frac</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">returns_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">*</span> <span class="n">allocated_frac</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">returns_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.get_day_volatility" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_day_volatility</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the volatility of the portfolio for a day.
+The volatility is calculated as the square root of the portfolio variance (w' * Sigma * w),
+where w is the vector of asset weights and Sigma is the covariance matrix of returns.
+If <code>account_for_cash</code> is True, the volatility is multiplied by the fraction of the total value
+that is allocated to assets.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>returns_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame, the returns of the assets</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>account_for_cash</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>bool, whether to account for the cash in the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the volatility of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_day_volatility</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the volatility of the portfolio for a day.</span>
+<span class="sd">    The volatility is calculated as the square root of the portfolio variance (w&#39; * Sigma * w),</span>
+<span class="sd">    where w is the vector of asset weights and Sigma is the covariance matrix of returns.</span>
+<span class="sd">    If `account_for_cash` is True, the volatility is multiplied by the fraction of the total value</span>
+<span class="sd">    that is allocated to assets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">        account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float, the volatility of the portfolio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cov_matrix</span> <span class="o">=</span> <span class="n">returns_df</span><span class="o">.</span><span class="n">cov</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">account_for_cash</span><span class="p">:</span>
+        <span class="c1"># cash has no volatility</span>
+        <span class="n">allocated_frac</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tot_value</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">cov_matrix</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">*</span> <span class="n">allocated_frac</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="n">cov_matrix</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.get_sharpe" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_sharpe</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the Sharpe ratio of the portfolio.
+If <code>account_for_cash</code> is True, the Sharpe ratio is computed using the fraction of the total value
+that is allocated to assets.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>returns_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame, the returns of the assets</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>account_for_cash</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>bool, whether to account for the cash in the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>float, the Sharpe ratio of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_sharpe</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Sharpe ratio of the portfolio.</span>
+<span class="sd">    If `account_for_cash` is True, the Sharpe ratio is computed using the fraction of the total value</span>
+<span class="sd">    that is allocated to assets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">        account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float, the Sharpe ratio of the portfolio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">yret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_return</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+    <span class="n">ycov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_volatility</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">yret</span> <span class="o">/</span> <span class="n">ycov</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.portfolio_metrics" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">portfolio_metrics</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute the return, volatility, and Sharpe ratio of the portfolio.
+If <code>account_for_cash</code> is True, the metrics are computed using the fraction of the total value
+that is allocated to assets.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>returns_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>pd.DataFrame, the returns of the assets</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>account_for_cash</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>bool, whether to account for the cash in the portfolio</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>dict, a dictionary with the return, volatility, and Sharpe ratio of the portfolio</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">portfolio_metrics</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">returns_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the return, volatility, and Sharpe ratio of the portfolio.</span>
+<span class="sd">    If `account_for_cash` is True, the metrics are computed using the fraction of the total value</span>
+<span class="sd">    that is allocated to assets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        returns_df: pd.DataFrame, the returns of the assets</span>
+<span class="sd">        account_for_cash: bool, whether to account for the cash in the portfolio</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict, a dictionary with the return, volatility, and Sharpe ratio of the portfolio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_return</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+    <span class="n">vol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_day_volatility</span><span class="p">(</span><span class="n">returns_df</span><span class="p">,</span> <span class="n">account_for_cash</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;Return&quot;</span><span class="p">:</span> <span class="n">ret</span><span class="p">,</span>
+        <span class="s2">&quot;Volatility&quot;</span><span class="p">:</span> <span class="n">vol</span><span class="p">,</span>
+        <span class="s2">&quot;Sharpe Ratio&quot;</span><span class="p">:</span> <span class="n">ret</span> <span class="o">/</span> <span class="n">vol</span><span class="p">,</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="DiscretePortfolioOptimization.portfolio.Portfolio.random_move" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">random_move</span><span class="p">()</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a random move in the portfolio changing the allocations of two assets.
+The two assets are chosen randomly and the move is the smallest possible in terms of value.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/DiscretePortfolioOptimization/portfolio.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">random_move</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform a random move in the portfolio changing the allocations of two assets.</span>
+<span class="sd">    The two assets are chosen randomly and the move is the smallest possible in terms of value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># determine two random assets</span>
+    <span class="n">available_poss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_assets</span><span class="p">)</span>
+    <span class="n">pos1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span>
+    <span class="n">price1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span>
+    <span class="n">available_poss</span> <span class="o">=</span> <span class="n">available_poss</span><span class="p">[</span><span class="n">available_poss</span> <span class="o">!=</span> <span class="n">pos1</span><span class="p">]</span>
+    <span class="n">pos2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">available_poss</span><span class="p">)</span>
+    <span class="n">price2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_prices</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span>
+
+    <span class="c1"># find smallest (in term of size) move</span>
+    <span class="n">largest_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">([</span><span class="n">price1</span><span class="p">,</span> <span class="n">price2</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">largest_value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">num1</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">num2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">price1</span> <span class="o">/</span> <span class="n">price2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">num1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">price2</span> <span class="o">/</span> <span class="n">price1</span><span class="p">)</span>
+        <span class="n">num2</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># determine the direction of the move</span>
+    <span class="n">first_2_second</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+    <span class="n">move_done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">first_2_second</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num2</span>
+            <span class="n">move_done</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num2</span>
+            <span class="n">move_done</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">move_done</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">first_2_second</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-</span> <span class="n">num1</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">num1</span> <span class="o">*</span> <span class="n">price1</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">*</span> <span class="n">price2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cash_value</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-</span> <span class="n">num2</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">allocations</span><span class="p">[</span><span class="n">pos2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">num2</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_values</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_sync_weights</span><span class="p">()</span>
+    <span class="k">return</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
